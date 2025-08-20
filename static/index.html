@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Launcher</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: white;
+      transition: background 1s ease;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .container {
+      text-align: center;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      max-width: 600px;
+      width: 100%;
+      animation: fadeIn 1s ease;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes resultFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 0;
+      opacity: 0.8;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 50px;
+      margin: 10px 0;
+      background: linear-gradient(45deg, #ff7e5f, #feb47b);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease, box-shadow 0.5s ease;
+      width: 100%;
+    }
+    button:hover {
+      transform: translateY(-3px) scale(1.02);
+      background: linear-gradient(45deg, #feb47b, #ff7e5f);
+      box-shadow: 0 8px 20px rgba(255,126,95,0.4);
+    }
+    button:active {
+      transform: translateY(0);
+      box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+    }
+    input {
+      padding: 12px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 100%;
+      margin-bottom: 15px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+    }
+    input:focus {
+      outline: none;
+      border-color: #ff7e5f;
+      box-shadow: 0 0 8px rgba(255,126,95,0.5);
+    }
+    p {
+      font-size: 1rem;
+      margin-top: 10px;
+      min-height: 24px;
+    }
+    .divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
+      margin: 25px 0;
+    }
+    #diceResult, #hangmanResult, #storyResult, #rpsResult {
+      font-family: 'Courier New', Courier, monospace;
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      animation: resultFadeIn 1s ease-in;
+    }
+    #hangmanGame, #rpsGame {
+      display: none;
+      margin-top: 20px;
+    }
+    #hangmanGame button, #rpsGame button {
+      margin-top: 10px;
+    }
+    #rpsGame .rps-button {
+      width: 32%;
+      display: inline-block;
+      margin: 0 5px;
+    }
+    /* Beautified AI Chat Section */
+    #chat {
+      background: rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 24px 20px 20px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(30,60,114,0.08);
+      text-align: left;
+      max-width: 100%;
+      width: 100%;
+      position: relative;
+    }
+    #chat input {
+      width: 70%;
+      display: inline-block;
+      margin-bottom: 0;
+      margin-right: 8px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: rgba(255,255,255,0.95);
+      color: #333;
+      transition: border-color 0.3s;
+    }
+    #chat button {
+      width: 25%;
+      display: inline-block;
+      margin-bottom: 0;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      padding: 10px 0;
+      background: linear-gradient(45deg, #1e3c72, #2a5298);
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(30,60,114,0.12);
+      transition: background 0.3s;
+    }
+    #chat button:hover {
+      background: linear-gradient(45deg, #2a5298, #1e3c72);
+    }
+    #chat textarea {
+      width: 100%;
+      margin-top: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-size: 1.05rem;
+      background: rgba(255,255,255,0.85);
+      color: #222;
+      resize: vertical;
+      min-height: 80px;
+      box-sizing: border-box;
+    }
+    /* NER Section Styles */
+    #ner-section {
+      display: block;
+      margin-top: 20px;
+      text-align: left;
+      background: rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 24px 20px 20px 20px;
+      box-shadow: 0 4px 16px rgba(30,60,114,0.08);
+      max-width: 100%;
+      width: 100%;
+    }
+    #ner-section p {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #ffd700;
+      text-shadow: 1px 1px 2px #222;
+    }
+    #nerInput {
+      width: 70%;
+      display: inline-block;
+      margin-bottom: 0;
+      margin-right: 8px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: rgba(255,255,255,0.95);
+      color: #333;
+      transition: border-color 0.3s;
+    }
+    #ner-section button {
+      width: 25%;
+      display: inline-block;
+      margin-bottom: 0;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      padding: 10px 0;
+      background: linear-gradient(45deg, #ff7e5f, #feb47b);
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(255,126,95,0.12);
+      transition: background 0.3s;
+    }
+    #ner-section button:hover {
+      background: linear-gradient(45deg, #feb47b, #ff7e5f);
+    }
+    #nerResult {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+      text-align: left;
+      color: #fff;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body id="pageBody">
+  <main class="container">
+    <header>
+      <h1>AI and Game Launcher</h1>
+      <h2>A collection of simple games</h2>
+    </header>
+
+    <!-- Menu Navigation -->
+    <nav style="margin-bottom:30px;">
+      <button onclick="showSection('ai-chat-section')">AI Chat</button>
+      <button onclick="showSection('math-section-group')">Math</button>
+      <button onclick="showSection('game-section-group')">Games</button>
+      <button onclick="showSection('ner-section-group')">NER</button>
+      <button onclick="showSection('image-section-group')">Image Generator</button>
+    </nav>
+
+    <!-- AI Chat Section -->
+    <section id="ai-chat-section" style="margin-bottom:30px;">
+      <div id="chat">
+        <label for="text" style="font-weight:bold;color:#ffd700;">AI Chat:</label><br>
+        <input id="text" placeholder="Type your message..." />
+        <button onclick="send()">Send</button>
+        <textarea id="reply" cols="30" rows="5" disabled placeholder="AI reply will appear here..."></textarea>
+      </div>
+    </section>
+    <!-- Math Section -->
+    <section id="math-section-group" style="margin-bottom:30px; display:none;">
+      <div id="math-section" style="margin-top:20px;">
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">Simple Math Operations</summary>
+          <div style="margin-top:10px;">
+            <label>Add:</label>
+            <input id="addA" type="number" placeholder="a" style="width:70px;">
+            <input id="addB" type="number" placeholder="b" style="width:70px;">
+            <button onclick="mathAdd()">Add</button>
+            <span id="addResult"></span>
+            <br>
+            <label>Subtract:</label>
+            <input id="subA" type="number" placeholder="a" style="width:70px;">
+            <input id="subB" type="number" placeholder="b" style="width:70px;">
+            <button onclick="mathSubtract()">Subtract</button>
+            <span id="subResult"></span>
+            <br>
+            <label>Multiply:</label>
+            <input id="mulA" type="number" placeholder="a" style="width:70px;">
+            <input id="mulB" type="number" placeholder="b" style="width:70px;">
+            <button onclick="mathMultiply()">Multiply</button>
+            <span id="mulResult"></span>
+            <br>
+            <label>Divide:</label>
+            <input id="divA" type="number" placeholder="a" style="width:70px;">
+            <input id="divB" type="number" placeholder="b" style="width:70px;">
+            <button onclick="mathDivide()">Divide</button>
+            <span id="divResult"></span>
+          </div>
+        </details>
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">Complex Math Operations</summary>
+          <div style="margin-top:10px;">
+            <label>Factorial:</label>
+            <input id="factN" type="number" placeholder="n" style="width:70px;">
+            <button onclick="mathFactorial()">Factorial</button>
+            <span id="factResult"></span>
+            <br>
+            <label>Power:</label>
+            <input id="powBase" type="number" placeholder="base" style="width:70px;">
+            <input id="powExp" type="number" placeholder="exp" style="width:70px;">
+            <button onclick="mathPower()">Power</button>
+            <span id="powResult"></span>
+            <br>
+            <label>Sqrt:</label>
+            <input id="sqrtNum" type="number" placeholder="num" style="width:70px;">
+            <button onclick="mathSqrt()">Sqrt</button>
+            <span id="sqrtResult"></span>
+            <br>
+            <label>Log:</label>
+            <input id="logNum" type="number" placeholder="num" style="width:70px;">
+            <input id="logBase" type="number" placeholder="base (optional)" style="width:70px;">
+            <button onclick="mathLog()">Log</button>
+            <span id="logResult"></span>
+            <br>
+            <label>Quadratic:</label>
+            <input id="quadA" type="number" placeholder="a" style="width:50px;">
+            <input id="quadB" type="number" placeholder="b" style="width:50px;">
+            <input id="quadC" type="number" placeholder="c" style="width:50px;">
+            <button onclick="mathQuadratic()">Solve</button>
+            <span id="quadResult"></span>
+          </div>
+        </details>
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">2D Shapes</summary>
+          <div style="margin-top:10px;">
+            <label>Rectangle:</label>
+            <input id="rectWidth" type="number" placeholder="width" style="width:70px;">
+            <input id="rectHeight" type="number" placeholder="height" style="width:70px;">
+            <button onclick="mathRectangle()">Rectangle</button>
+            <span id="rectResult"></span>
+            <br>
+            <label>Circle:</label>
+            <input id="circleRadius" type="number" placeholder="radius" style="width:70px;">
+            <button onclick="mathCircle()">Circle</button>
+            <span id="circleResult"></span>
+            <br>
+            <label>Square:</label>
+            <input id="squareSide" type="number" placeholder="side" style="width:70px;">
+            <button onclick="mathSquare()">Square</button>
+            <span id="squareResult"></span>
+            <br>
+            <label>Triangle:</label>
+            <input id="triWidth" type="number" placeholder="width" style="width:50px;">
+            <input id="triHeight" type="number" placeholder="height" style="width:50px;">
+            <input id="triSide" type="number" placeholder="side" style="width:50px;">
+            <button onclick="mathTriangle()">Triangle</button>
+            <span id="triResult"></span>
+          </div>
+        </details>
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">3D Shapes</summary>
+          <div style="margin-top:10px;">
+            <label>Cube:</label>
+            <input id="cubeSide" type="number" placeholder="side" style="width:70px;">
+            <button onclick="mathCube()">Cube</button>
+            <span id="cubeResult"></span>
+            <br>
+            <label>Sphere:</label>
+            <input id="sphereRadius" type="number" placeholder="radius" style="width:70px;">
+            <button onclick="mathSphere()">Sphere</button>
+            <span id="sphereResult"></span>
+            <br>
+            <label>Cylinder:</label>
+            <input id="cylRadius" type="number" placeholder="radius" style="width:70px;">
+            <input id="cylHeight" type="number" placeholder="height" style="width:70px;">
+            <button onclick="mathCylinder()">Cylinder</button>
+            <span id="cylResult"></span>
+            <br>
+            <label>Cuboid:</label>
+            <input id="cuboidSide" type="number" placeholder="side" style="width:50px;">
+            <input id="cuboidLength" type="number" placeholder="length" style="width:50px;">
+            <input id="cuboidHeight" type="number" placeholder="height" style="width:50px;">
+            <button onclick="mathCuboid()">Cuboid</button>
+            <span id="cuboidResult"></span>
+          </div>
+        </details>
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">BMI Calculator</summary>
+          <div style="margin-top:10px;">
+            <label>Weight (kg):</label>
+            <input id="bmiWeight" type="number" placeholder="weight" style="width:70px;">
+            <label>Height (cm):</label>
+            <input id="bmiHeight" type="number" placeholder="height" style="width:70px;">
+            <button onclick="mathBMI()">Calculate BMI</button>
+            <span id="bmiResult"></span>
+          </div>
+        </details>
+      </div>
+    </section>
+    <!-- Game Section (grouped) -->
+    <section id="game-section-group" style="margin-bottom:30px; display:none;">
+      <!-- Game Launchers Section -->
+      <div id="game-launchers-section" style="margin-bottom:30px;">
+        <button onclick="launchDualClock()" aria-label="Launch Dual Clock">Launch Dual Clock</button>
+        <div class="divider"></div>
+        <button onclick="launchAimTrainer()" aria-label="Launch Aim Trainer">Launch Aim Trainer</button>
+        <div class="divider"></div>
+        <button onclick="launchCoinCatcher()" aria-label="Launch Coin Catcher">Launch Coin Catcher</button>
+      </div>
+      <div class="divider"></div>
+      <!-- Adventure Section -->
+      <div id="adventure-section" style="margin-bottom:30px;">
+        <div id="adventure">
+          <p id="story">Enter your name to begin the adventure:</p>
+          <input id="playerInput" placeholder="Your name" />
+          <button onclick="nextStep()" aria-label="Submit your choice">Submit</button>
+          <pre id="storyResult"></pre>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <!-- Dice Roller Section -->
+      <div id="dice-roller-section" style="margin-bottom:30px;">
+        <div id="dice-roller">
+          <p>Enter the number of dice to roll:</p>
+          <input type="number" id="numDiceInput" min="1" value="1" />
+          <button onclick="rollDiceFromInput()" aria-label="Roll Dice">Roll Dice</button>
+          <button onclick="resetDiceRoller()" aria-label="Reset the dice roller">Reset Dice</button>
+        </div>
+        <pre id="diceResult" style="white-space: pre-wrap; text-align: left;"></pre>
+      </div>
+      <div class="divider"></div>
+      <!-- Hangman Section -->
+      <div id="hangman-section" style="margin-bottom:30px;">
+        <div id="hangman-launcher">
+          <button onclick="launchHangman()" aria-label="Launch Hangman">Launch Hangman</button>
+        </div>
+        <div id="hangmanGame">
+            <pre id="hangmanArt"></pre>
+            <p id="hangmanHint"></p>
+            <p>Guessed letters: <span id="guessedLetters"></span></p>
+            <input id="hangmanInput" placeholder="Guess a letter" maxlength="1" />
+            <button onclick="checkGuess()">Submit Guess</button>
+            <p id="hangmanMessage"></p>
+            <button onclick="resetHangman()" id="hangmanResetBtn" style="display:none;">Play Again</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <!-- RPS Section -->
+      <div id="rps-section" style="margin-bottom:30px;">
+        <div id="rps-launcher">
+            <button onclick="launchRPS()" aria-label="Launch Rock Paper Scissors">Launch Rock Paper Scissors</button>
+        </div>
+        <div id="rpsGame">
+            <p>First to 3 wins!</p>
+            <p>Choose your move:</p>
+            <div id="rpsChoices">
+                <button class="rps-button" onclick="playRPS('rock')">Rock</button>
+                <button class="rps-button" onclick="playRPS('paper')">Paper</button>
+                <button class="rps-button" onclick="playRPS('scissors')">Scissors</button>
+            </div>
+            <pre id="rpsResult"></pre>
+            <p>Score: You <span id="userScore">0</span> | Computer <span id="computerScore">0</span></p>
+            <button onclick="resetRPS()" id="rpsResetBtn" style="display:none;">Play Again</button>
+        </div>
+      </div>
+    </section>
+    <!-- NER Section -->
+    <section id="ner-section-group" style="margin-bottom:30px; display:none;">
+      <div id="ner-section">
+        <p>Named Entity Recognition (NER):</p>
+        <input id="nerInput" placeholder="Enter text for NER" />
+        <button onclick="sendNER()" aria-label="Analyze Entities">Analyze Entities</button>
+        <pre id="nerResult"></pre>
+      </div>
+    </section>
+    <!-- Image Generator Section -->
+    <section id="image-section-group" style="margin-bottom:30px; display:none;">
+      <div id="image-generator-section" style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;">
+        <p style="font-size:1.1rem;font-weight:bold;color:#ffd700;text-shadow:1px 1px 2px #222;">Image Generator (Gemini)</p>
+        <input id="imagePrompt" placeholder="Enter prompt for image" style="width:70%;margin-bottom:0;margin-right:8px;font-size:1.1rem;border-radius:8px;border:1px solid #ccc;padding:10px;background:rgba(255,255,255,0.95);color:#333;">
+        <button onclick="generateImage()" style="width:25%;font-size:1.1rem;border-radius:8px;padding:10px 0;background:linear-gradient(45deg,#1e3c72,#2a5298);color:white;font-weight:bold;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(30,60,114,0.12);transition:background 0.3s;">Generate</button>
+        <div id="imageResult" style="margin-top:16px;"></div>
+      </div>
+    </section>
+  </main>
+
+  <audio id="winSound" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_6b906fceba.mp3?filename=success-1-6297.mp3"></audio>
+  <audio id="loseSound" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_558ef4ff44.mp3?filename=negative-beeps-6008.mp3"></audio>
+  <audio id="typeSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_0b8dbf25f1.mp3?filename=mechanical-keyboard-typing-6712.mp3"></audio>
+
+  <script>
+    function send() {
+      const text = document.getElementById("text").value.trim().toLowerCase();
+      const result = document.getElementById("result");
+
+      // Correct native JavaScript code
+      document.getElementById("reply").value = "reply...";
+      fetch('/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: text
+        })
+      })
+      .then(response => {
+        // First, handle potential network or server errors.
+        // The fetch() promise only rejects on a network failure, not HTTP errors like 404 or 500.
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        // This returns a new promise that resolves with the parsed JSON data.
+        return response.json();
+      })
+      .then(data => {
+        console.log('Success:', data);
+        document.getElementById("reply").value = data.reply;
+      });
+    }
+
+    let step = 0;
+    let playerName = "";
+
+    function setBackground(mode) {
+      const body = document.getElementById("pageBody");
+      if (mode === "play") {
+        body.style.background = "linear-gradient(135deg, #1e3c72, #2a5298)";
+      } else if (mode === "win") {
+        body.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
+      } else if (mode === "lose") {
+        body.style.background = "linear-gradient(135deg, #8B0000, #B22222)";
+      }
+    }
+
+    function launchDualClock() {
+      const btn = event.target;
+      btn.innerText = "Launching...";
+      btn.disabled = true;
+      fetch('/dual_clock').then(() => {
+        btn.innerText = "Dual Clock Launched!";
+        setTimeout(() => {
+          btn.innerText = "Launch Dual Clock";
+          btn.disabled = false;
+        }, 2000);
+      });
+    }
+
+    function launchAimTrainer() {
+      const btn = event.target;
+      btn.innerText = "Launching...";
+      btn.disabled = true;
+      fetch('/aim_trainer').then(() => {
+        btn.innerText = "Aim Trainer Launched!";
+        setTimeout(() => {
+          btn.innerText = "Launch Aim Trainer";
+          btn.disabled = false;
+        }, 2000);
+      });
+    }
+
+    function launchCoinCatcher() {
+      const btn = event.target;
+      btn.innerText = "Launching...";
+      btn.disabled = true;
+      fetch('/coin_catcher').then(() => {
+        btn.innerText = "Coin Catcher Launched!";
+        setTimeout(() => {
+          btn.innerText = "Launch Coin Catcher";
+          btn.disabled = false;
+        }, 2000);
+      });
+    }
+
+    function typeWriterEffect(text, elementId) {
+      const element = document.getElementById(elementId);
+      element.innerText = "";
+      let i = 0;
+      const typeSound = document.getElementById("typeSound");
+
+      function typing() {
+        if (i < text.length) {
+          element.innerText += text.charAt(i);
+          typeSound.currentTime = 0;
+          typeSound.play().catch(()=>{});
+          i++;
+          setTimeout(typing, 40);
+        }
+      }
+      typing();
+    }
+
+    function nextStep() {
+      const input = document.getElementById("playerInput").value.trim().toLowerCase();
+      document.getElementById("playerInput").value = "";
+      document.getElementById("storyResult").innerText = "";
+
+      if (step === 0) {
+        setBackground("play");
+        playerName = input || "Adventurer";
+        typeWriterEffect(`Welcome ${playerName}! You are on a dirt road. It has come to an end and you can go left or right. Which way would you like to go?`, "story");
+        step = 1;
+      }
+      else if (step === 1) {
+        if (input === "left") {
+          typeWriterEffect("You come to a river. You can walk around it or swim across. Type 'walk' or 'swim':", "story");
+          step = 2;
+        } else if (input === "right") {
+          typeWriterEffect("You come to a bridge, it looks wobbly. Do you want to cross it or head back? Type 'cross' or 'back':", "story");
+          step = 3;
+        } else {
+          loseAdventure(`Not a valid option. You lose.\nThank you for trying, ${playerName}`);
+        }
+      }
+      else if (step === 2) {
+        if (input === "swim") {
+          loseAdventure("You swam across and were eaten by an alligator.");
+        } else if (input === "walk") {
+          loseAdventure("You walked for many miles, ran out of water and lost the game.");
+        } else {
+          loseAdventure("Not a valid option. You lose.");
+        }
+      }
+      else if (step === 3) {
+        if (input === "back") {
+          loseAdventure("You go back and lose.");
+        } else if (input === "cross") {
+          typeWriterEffect("You cross the bridge and meet a stranger. Do you talk to them? Type 'yes' or 'no':", "story");
+          step = 4;
+        } else {
+          loseAdventure("Not a valid option. You lose.");
+        }
+      }
+      else if (step === 4) {
+        if (input === "yes") {
+          winAdventure("You talk to the stranger and they give you gold. You WIN!");
+        } else if (input === "no") {
+          loseAdventure("You ignore the stranger, they are offended, and you lose.");
+        } else {
+          loseAdventure("Not a valid option. You lose.");
+        }
+      }
+    }
+
+    function winAdventure(message) {
+      setBackground("win");
+      document.getElementById("winSound").play().catch(()=>{});
+      typeWriterEffect(message + `\nThank you for playing, ${playerName}`, "story");
+      step = -1;
+    }
+
+    function loseAdventure(message) {
+      setBackground("lose");
+      document.getElementById("loseSound").play().catch(()=>{});
+      typeWriterEffect(message + `\nThank you for playing, ${playerName}`, "story");
+      step = -1;
+    }
+    
+    function resetDiceRoller() {
+      document.getElementById("numDiceInput").value = 1;
+      document.getElementById("diceResult").innerText = "";
+    }      
+
+    function rollDiceFromInput() {
+      const num_of_dice = parseInt(document.getElementById("numDiceInput").value);
+      
+      if (isNaN(num_of_dice) || num_of_dice <= 0) {
+        document.getElementById("diceResult").innerText = "Please enter a valid number of dice (e.g., 1, 2, 3).";
+        return;
+      }
+
+      const dice_art = {
+        1: ["┌─────────┐", "|         |", "|    ●    |", "|         |", "└─────────┘"],
+        2: ["┌─────────┐", "| ●       |", "|         |", "|       ● |", "└─────────┘"],
+        3: ["┌─────────┐", "| ●       |", "|    ●    |", "|       ● |", "└─────────┘"],
+        4: ["┌─────────┐", "| ●     ● |", "|         |", "| ●     ● |", "└─────────┘"],
+        5: ["┌─────────┐", "| ●     ● |", "|    ●    |", "| ●     ● |", "└─────────┘"],
+        6: ["┌─────────┐", "| ●     ● |", "| ●     ● |", "| ●     ● |", "└─────────┘"]
+      };
+
+      const dice = [];
+      let total = 0;
+      for (let i = 0; i < num_of_dice; i++) {
+        const roll = Math.floor(Math.random() * 6) + 1;
+        dice.push(roll);
+        total += roll;
+      }
+
+      let diceOutput = "";
+      for (let i = 0; i < 5; i++) {
+        for (const die of dice) {
+          diceOutput += dice_art[die][i];
+        }
+        diceOutput += "\n";
+      }
+
+      diceOutput += "\nTotal: " + total;
+
+      document.getElementById("diceResult").innerText = diceOutput;
+    }
+
+    // Hangman Game Logic
+    const words = ["apple", "orange", "banana", "coconut", "pineapple", "pear", "rambutan", "cherry"];
+
+    const hangman_art = {
+      0: ["  ", "  ", "  "],
+      1: [" o ", "  ", "  "],
+      2: [" o ", " | ", "  "],
+      3: [" o ", "/| ", "  "],
+      4: [" o ", "/|\\", "  "],
+      5: [" o ", "/|\\", "/ "],
+      6: [" o ", "/|\\", "/ \\"]
+    };
+
+    let hangmanAnswer = "";
+    let hangmanHint = [];
+    let hangmanWrongGuesses = 0;
+    const hangmanGuessedLetters = new Set();
+    
+    function launchHangman() {
+      document.getElementById("hangman-launcher").style.display = "none";
+      document.getElementById("hangmanGame").style.display = "block";
+      resetHangman();
+    }
+    
+    function resetHangman() {
+      hangmanAnswer = words[Math.floor(Math.random() * words.length)];
+      hangmanHint = Array(hangmanAnswer.length).fill("_");
+      hangmanWrongGuesses = 0;
+      hangmanGuessedLetters.clear();
+      
+      document.getElementById("hangmanInput").value = "";
+      document.getElementById("hangmanInput").disabled = false;
+      document.getElementById("hangmanResetBtn").style.display = "none";
+      document.getElementById("hangmanMessage").innerText = "";
+
+      updateHangmanDisplay();
+    }
+
+    function updateHangmanDisplay() {
+      document.getElementById("hangmanArt").innerText = hangman_art[hangmanWrongGuesses].join("\n");
+      document.getElementById("hangmanHint").innerText = hangmanHint.join(" ");
+      document.getElementById("guessedLetters").innerText = Array.from(hangmanGuessedLetters).join(", ");
+    }
+
+    function checkGuess() {
+      const input = document.getElementById("hangmanInput");
+      const guess = input.value.toLowerCase().trim();
+      input.value = "";
+
+      if (guess.length !== 1 || !/^[a-z]$/.test(guess)) {
+        document.getElementById("hangmanMessage").innerText = "Invalid input! Please enter a single letter.";
+        return;
+      }
+      
+      if (hangmanGuessedLetters.has(guess)) {
+        document.getElementById("hangmanMessage").innerText = `${guess} is already guessed!`;
+        return;
+      }
+      
+      hangmanGuessedLetters.add(guess);
+      
+      if (hangmanAnswer.includes(guess)) {
+        for (let i = 0; i < hangmanAnswer.length; i++) {
+          if (hangmanAnswer[i] === guess) {
+            hangmanHint[i] = guess;
+          }
+        }
+      } else {
+        hangmanWrongGuesses++;
+      }
+      
+      updateHangmanDisplay();
+
+      if (!hangmanHint.includes("_")) {
+        document.getElementById("hangmanMessage").innerText = "You win!";
+        document.getElementById("winSound").play().catch(()=>{});
+        document.getElementById("hangmanInput").disabled = true;
+        document.getElementById("hangmanResetBtn").style.display = "block";
+      } else if (hangmanWrongGuesses === 6) {
+        document.getElementById("hangmanMessage").innerText = `You lose! The word was '${hangmanAnswer}'.`;
+        document.getElementById("loseSound").play().catch(()=>{});
+        document.getElementById("hangmanInput").disabled = true;
+        document.getElementById("hangmanResetBtn").style.display = "block";
+      } else {
+        document.getElementById("hangmanMessage").innerText = "";
+      }
+    }
+
+    // Rock Paper Scissors Game Logic
+    let userWins = 0;
+    let computerWins = 0;
+    const rpsOptions = ["rock", "paper", "scissors"];
+    const rpsScoreLimit = 3;
+
+    function launchRPS() {
+      document.getElementById("rps-launcher").style.display = "none";
+      document.getElementById("rpsGame").style.display = "block";
+      updateRPSScore();
+    }
+
+    function playRPS(userChoice) {
+      const rpsButtons = document.querySelectorAll('.rps-button');
+      
+      const random_number = Math.floor(Math.random() * 3);
+      const computerChoice = rpsOptions[random_number];
+      let resultMessage = "";
+
+      if (userChoice === computerChoice) {
+        resultMessage = `You both chose ${userChoice}! It's a draw!`;
+      } else if (
+        (userChoice === "rock" && computerChoice === "scissors") ||
+        (userChoice === "paper" && computerChoice === "rock") ||
+        (userChoice === "scissors" && computerChoice === "paper")
+      ) {
+        resultMessage = `You chose ${userChoice} and the computer chose ${computerChoice}. You won!`;
+        userWins++;
+      } else {
+        resultMessage = `You chose ${userChoice} and the computer chose ${computerChoice}. You lost!`;
+        computerWins++;
+      }
+
+      document.getElementById("rpsResult").innerText = resultMessage;
+      updateRPSScore();
+
+      if (userWins === rpsScoreLimit) {
+        document.getElementById("rpsResult").innerText = `You won the game! Final score: You ${userWins} | Computer ${computerWins}`;
+        rpsButtons.forEach(button => button.disabled = true);
+        document.getElementById("rpsResetBtn").style.display = "block";
+      } else if (computerWins === rpsScoreLimit) {
+        document.getElementById("rpsResult").innerText = `The computer won the game! Final score: You ${userWins} | Computer ${computerWins}`;
+        rpsButtons.forEach(button => button.disabled = true);
+        document.getElementById("rpsResetBtn").style.display = "block";
+      }
+    }
+    
+    function updateRPSScore() {
+      document.getElementById("userScore").innerText = userWins;
+      document.getElementById("computerScore").innerText = computerWins;
+    }
+
+    function resetRPS() {
+      userWins = 0;
+      computerWins = 0;
+      document.getElementById("rpsResult").innerText = "";
+      const rpsButtons = document.querySelectorAll('.rps-button');
+      rpsButtons.forEach(button => button.disabled = false);
+      document.getElementById("rpsResetBtn").style.display = "none";
+      updateRPSScore();
+    }
+
+    // NER Route Function
+    function sendNER() {
+      const text = document.getElementById("nerInput").value.trim();
+      document.getElementById("nerResult").innerText = "Analyzing...";
+      fetch('/ner/sentiment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        return response.json();
+      })
+      .then(resp => {
+        // Display all sentiment object items
+        let data = resp.data || resp;
+        let result = "";
+        if (data.sentiment && typeof data.sentiment === "object") {
+          result += "Sentiment Scores:\n";
+          for (const [key, value] of Object.entries(data.sentiment)) {
+            result += `- ${key}: ${value}\n`;
+          }
+        } else if (typeof data === "object") {
+          result += "Result:\n";
+          for (const [key, value] of Object.entries(data)) {
+            result += `- ${key}: ${value}\n`;
+          }
+        } else {
+          result = "No sentiment result found.";
+        }
+        document.getElementById("nerResult").innerText = result;
+      })
+      .catch((err) => {
+        document.getElementById("nerResult").innerText = "Error analyzing entities.\n" + (err.message || err);
+      });
+    }
+
+    // Simple Math
+    function mathAdd() {
+      const a = document.getElementById("addA").value;
+      const b = document.getElementById("addB").value;
+      fetch(`/math/simple/add?a=${a}&b=${b}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("addResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathSubtract() {
+      const a = document.getElementById("subA").value;
+      const b = document.getElementById("subB").value;
+      fetch(`/math/simple/subtract?a=${a}&b=${b}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("subResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathMultiply() {
+      const a = document.getElementById("mulA").value;
+      const b = document.getElementById("mulB").value;
+      fetch(`/math/simple/multiply?a=${a}&b=${b}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("mulResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathDivide() {
+      const a = document.getElementById("divA").value;
+      const b = document.getElementById("divB").value;
+      fetch(`/math/simple/divide?a=${a}&b=${b}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("divResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+
+    // Complex Math
+    function mathFactorial() {
+      const n = document.getElementById("factN").value;
+      fetch(`/math/complex/factorial?n=${n}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("factResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathPower() {
+      const base = document.getElementById("powBase").value;
+      const exp = document.getElementById("powExp").value;
+      fetch(`/math/complex/power?base=${base}&exp=${exp}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("powResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathSqrt() {
+      const num = document.getElementById("sqrtNum").value;
+      fetch(`/math/complex/sqrt?num=${num}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("sqrtResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathLog() {
+      const num = document.getElementById("logNum").value;
+      const base = document.getElementById("logBase").value;
+      fetch(`/math/complex/log?num=${num}${base ? `&base=${base}` : ""}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("logResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathQuadratic() {
+      const a = document.getElementById("quadA").value;
+      const b = document.getElementById("quadB").value;
+      const c = document.getElementById("quadC").value;
+      fetch(`/math/complex/quadratic?a=${a}&b=${b}&c=${c}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("quadResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+
+    // 2D Shapes
+    function mathRectangle() {
+      const width = document.getElementById("rectWidth").value;
+      const height = document.getElementById("rectHeight").value;
+      fetch(`/math/2d/rectangle?width=${width}&height=${height}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("rectResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathCircle() {
+      const radius = document.getElementById("circleRadius").value;
+      fetch(`/math/2d/circle?radius=${radius}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("circleResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathSquare() {
+      const side = document.getElementById("squareSide").value;
+      fetch(`/math/2d/square?side=${side}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("squareResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathTriangle() {
+      const width = document.getElementById("triWidth").value;
+      const height = document.getElementById("triHeight").value;
+      const side = document.getElementById("triSide").value;
+      fetch(`/math/2d/triangle?width=${width}&height=${height}&side=${side}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("triResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+
+    // 3D Shapes
+    function mathCube() {
+      const side = document.getElementById("cubeSide").value;
+      fetch(`/math/3d/cube?side=${side}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("cubeResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathSphere() {
+      const radius = document.getElementById("sphereRadius").value;
+      fetch(`/math/3d/sphere?radius=${radius}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("sphereResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathCylinder() {
+      const radius = document.getElementById("cylRadius").value;
+      const height = document.getElementById("cylHeight").value;
+      fetch(`/math/3d/cylinder?radius=${radius}&height=${height}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("cylResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathCuboid() {
+      const side = document.getElementById("cuboidSide").value;
+      const length = document.getElementById("cuboidLength").value;
+      const height = document.getElementById("cuboidHeight").value;
+      fetch(`/math/3d/cuboid?side=${side}&length=${length}&height=${height}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("cuboidResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+
+    // BMI
+    function mathBMI() {
+      const weight = document.getElementById("bmiWeight").value;
+      const height = document.getElementById("bmiHeight").value;
+      fetch(`/bmi`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weight: Number(weight), height: Number(height) })
+      })
+        .then(r=>r.json()).then(data=>{
+          if (data.data) {
+            document.getElementById("bmiResult").innerText = `BMI: ${data.data.bmi} - ${data.data.result}`;
+          } else {
+            document.getElementById("bmiResult").innerText = data.message || JSON.stringify(data);
+          }
+        });
+    }
+
+    // Menu navigation logic
+    function showSection(sectionId) {
+      document.getElementById('ai-chat-section').style.display = 'none';
+      document.getElementById('math-section-group').style.display = 'none';
+      document.getElementById('game-section-group').style.display = 'none';
+      document.getElementById('ner-section-group').style.display = 'none';
+      document.getElementById('image-section-group').style.display = 'none';
+      document.getElementById(sectionId).style.display = 'block';
+    }
+
+    // Show AI Chat by default on load
+    window.onload = function() {
+      showSection('ai-chat-section');
+    };
+
+    // Image Generator Function
+    function generateImage() {
+      const prompt = document.getElementById("imagePrompt").value.trim();
+      const resultDiv = document.getElementById("imageResult");
+      resultDiv.innerHTML = "Generating...";
+      fetch('/image', { // <-- change back to /chat route
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: prompt })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        // If the response is a URL, show image; if base64, show image; else show text
+        if (typeof data.image === "string" && data.image) {
+          if (data.image.startsWith("http")) {
+            resultDiv.innerHTML = `<img src="${data.image}" alt="Generated Image" style="max-width:100%;border-radius:12px;box-shadow:0 2px 8px #222;">`;
+          } else if (data.image.startsWith("data:image")) {
+            resultDiv.innerHTML = `<img src="${data.image}" alt="Generated Image" style="max-width:100%;border-radius:12px;box-shadow:0 2px 8px #222;">`;
+          } else {
+            resultDiv.innerText = data.image;
+          }
+        } else {
+          resultDiv.innerText = "No image generated.";
+        }
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error generating image.\n" + (err.message || err);
+      });
+    }
+  </script>
+</body>
+</html>
