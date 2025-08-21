@@ -89,7 +89,7 @@ def text_generator(text):
       'status': 200,
       'message': '',
       'data': {
-        'result': result
+        'result': result[0]['generated_text'] if result else 'No text generated'
       }
     }
   except Exception as e:

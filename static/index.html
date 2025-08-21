@@ -263,65 +263,15 @@
     <!-- Math Section -->
     <section id="math-section-group" style="margin-bottom:30px; display:none;">
       <div id="math-section" style="margin-top:20px;">
-        <details>
-          <summary style="font-weight:bold;color:#ffd700;">Simple Math Operations</summary>
+        <details open>
+          <summary style="font-weight:bold;color:#ffd700;">Scientific Calculator</summary>
           <div style="margin-top:10px;">
-            <label>Add:</label>
-            <input id="addA" type="number" placeholder="a" style="width:70px;">
-            <input id="addB" type="number" placeholder="b" style="width:70px;">
-            <button onclick="mathAdd()">Add</button>
-            <span id="addResult"></span>
-            <br>
-            <label>Subtract:</label>
-            <input id="subA" type="number" placeholder="a" style="width:70px;">
-            <input id="subB" type="number" placeholder="b" style="width:70px;">
-            <button onclick="mathSubtract()">Subtract</button>
-            <span id="subResult"></span>
-            <br>
-            <label>Multiply:</label>
-            <input id="mulA" type="number" placeholder="a" style="width:70px;">
-            <input id="mulB" type="number" placeholder="b" style="width:70px;">
-            <button onclick="mathMultiply()">Multiply</button>
-            <span id="mulResult"></span>
-            <br>
-            <label>Divide:</label>
-            <input id="divA" type="number" placeholder="a" style="width:70px;">
-            <input id="divB" type="number" placeholder="b" style="width:70px;">
-            <button onclick="mathDivide()">Divide</button>
-            <span id="divResult"></span>
-          </div>
-        </details>
-        <details>
-          <summary style="font-weight:bold;color:#ffd700;">Complex Math Operations</summary>
-          <div style="margin-top:10px;">
-            <label>Factorial:</label>
-            <input id="factN" type="number" placeholder="n" style="width:70px;">
-            <button onclick="mathFactorial()">Factorial</button>
-            <span id="factResult"></span>
-            <br>
-            <label>Power:</label>
-            <input id="powBase" type="number" placeholder="base" style="width:70px;">
-            <input id="powExp" type="number" placeholder="exp" style="width:70px;">
-            <button onclick="mathPower()">Power</button>
-            <span id="powResult"></span>
-            <br>
-            <label>Sqrt:</label>
-            <input id="sqrtNum" type="number" placeholder="num" style="width:70px;">
-            <button onclick="mathSqrt()">Sqrt</button>
-            <span id="sqrtResult"></span>
-            <br>
-            <label>Log:</label>
-            <input id="logNum" type="number" placeholder="num" style="width:70px;">
-            <input id="logBase" type="number" placeholder="base (optional)" style="width:70px;">
-            <button onclick="mathLog()">Log</button>
-            <span id="logResult"></span>
-            <br>
-            <label>Quadratic:</label>
-            <input id="quadA" type="number" placeholder="a" style="width:50px;">
-            <input id="quadB" type="number" placeholder="b" style="width:50px;">
-            <input id="quadC" type="number" placeholder="c" style="width:50px;">
-            <button onclick="mathQuadratic()">Solve</button>
-            <span id="quadResult"></span>
+            <input id="sciExpr" type="text" placeholder="Enter expression (e.g. sin(30)+log(10))" style="width:70%;">
+            <button onclick="calculateScientific()" style="width:25%;">Calculate</button>
+            <div id="sciResult" style="margin-top:10px;font-family:'Courier New',Courier,monospace;"></div>
+            <div style="margin-top:15px;">
+              <span style="font-size:0.95em;color:#ffd700;">Supported: +, -, *, /, ^, sqrt(), sin(), cos(), tan(), log(), exp(), abs(), factorial(), pi, e</span>
+            </div>
           </div>
         </details>
         <details>
@@ -376,6 +326,19 @@
             <input id="cuboidHeight" type="number" placeholder="height" style="width:50px;">
             <button onclick="mathCuboid()">Cuboid</button>
             <span id="cuboidResult"></span>
+          </div>
+        </details>
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">Quadratic Function</summary>
+          <div style="margin-top:10px;">
+            <label for="quadA">a:</label>
+            <input id="quadA" type="number" placeholder="a" style="width:50px;">
+            <label for="quadB">b:</label>
+            <input id="quadB" type="number" placeholder="b" style="width:50px;">
+            <label for="quadC">c:</label>
+            <input id="quadC" type="number" placeholder="c" style="width:50px;">
+            <button onclick="mathQuadratic()" style="width:100%;margin-top:10px;">Solve</button>
+            <div id="quadResult" style="margin-top:10px;font-family:'Courier New',Courier,monospace;"></div>
           </div>
         </details>
         <details>
@@ -466,6 +429,41 @@
         <button onclick="sendNER()" aria-label="Analyze Entities">Analyze Entities</button>
         <pre id="nerResult"></pre>
       </div>
+      <div style="margin-top:24px;">
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">Summarize Text</summary>
+          <div style="margin-top:10px;">
+            <label for="summarizeInput" style="font-weight:bold;">Text to summarize:</label>
+            <textarea id="summarizeInput" placeholder="Enter text to summarize" style="width:100%;min-height:80px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;padding:10px;font-size:1.05rem;background:rgba(255,255,255,0.85);color:#222;"></textarea>
+            <button onclick="sendSummarize()" style="width:100%;margin-top:8px;">Summarize</button>
+            <div id="summarizeResult" style="margin-top:10px;white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
+          </div>
+        </details>
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">Text Generator</summary>
+          <div style="margin-top:10px;">
+            <label for="generatorInput" style="font-weight:bold;">Prompt:</label>
+            <input id="generatorInput" placeholder="Enter prompt for text generation" style="width:100%;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;padding:10px;font-size:1.05rem;background:rgba(255,255,255,0.85);color:#222;">
+            <button onclick="sendGenerator()" style="width:100%;margin-top:8px;">Generate</button>
+            <div id="generatorResult" style="margin-top:10px;white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
+          </div>
+        </details>
+      </div>
+      <div style="margin-top:24px;">
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">Morse Code</summary>
+          <div style="margin-top:10px;">
+            <label for="morseEncodeInput" style="font-weight:bold;">Text to encode:</label>
+            <input id="morseEncodeInput" placeholder="Text to encode" style="width:100%;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;padding:10px;">
+            <button onclick="sendMorseEncode()" style="width:100%;margin-bottom:8px;">Encode</button>
+            <div id="morseEncodeResult" style="margin-bottom:16px;white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
+            <label for="morseDecodeInput" style="font-weight:bold;">Morse to decode:</label>
+            <input id="morseDecodeInput" placeholder="Morse to decode" style="width:100%;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;padding:10px;">
+            <button onclick="sendMorseDecode()" style="width:100%;margin-bottom:8px;">Decode</button>
+            <div id="morseDecodeResult" style="white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
+          </div>
+        </details>
+      </div>
     </section>
     <!-- Image Generator Section -->
     <section id="image-section-group" style="margin-bottom:30px; display:none;">
@@ -483,6 +481,16 @@
   <audio id="typeSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_0b8dbf25f1.mp3?filename=mechanical-keyboard-typing-6712.mp3"></audio>
 
   <script>
+    // Move showSection function to the very top so it's defined before any inline onclick handlers
+    function showSection(sectionId) {
+      document.getElementById('ai-chat-section').style.display = 'none';
+      document.getElementById('math-section-group').style.display = 'none';
+      document.getElementById('game-section-group').style.display = 'none';
+      document.getElementById('ner-section-group').style.display = 'none';
+      document.getElementById('image-section-group').style.display = 'none';
+      document.getElementById(sectionId).style.display = 'block';
+    }
+
     function send() {
       const text = document.getElementById("text").value.trim().toLowerCase();
       const result = document.getElementById("result");
@@ -883,6 +891,108 @@
       });
     }
 
+    // NER Summarize
+    function sendSummarize() {
+      const text = document.getElementById("summarizeInput").value.trim();
+      const resultDiv = document.getElementById("summarizeResult");
+      resultDiv.innerText = "Summarizing...";
+      fetch('/ner/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      })
+      .then(r => r.json())
+      .then(data => {
+        let result = data.data ?? data.result ?? data.message ?? data;
+        // Accept summary from nested object or string
+        if (typeof result === "object" && result !== null) {
+          if (result.summary) result = result.summary;
+          else if (result.text) result = result.text;
+          else if (result.result) result = result.result;
+          else result = JSON.stringify(result, null, 2);
+        }
+        resultDiv.innerText = result;
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error: " + (err.message || err);
+      });
+    }
+
+    // NER Generator
+    function sendGenerator() {
+      const text = document.getElementById("generatorInput").value.trim();
+      const resultDiv = document.getElementById("generatorResult");
+      resultDiv.innerText = "Generating...";
+      fetch('/ner/generator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      })
+      .then(r => r.json())
+      .then(data => {
+        let result = data.data ?? data.result ?? data.message ?? data;
+        // Accept generated text from nested object or string
+        if (typeof result === "object" && result !== null) {
+          if (result.generated_text) result = result.generated_text;
+          else if (result.text) result = result.text;
+          else if (result.result) result = result.result;
+          else result = JSON.stringify(result, null, 2);
+        }
+        resultDiv.innerText = result;
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error: " + (err.message || err);
+      });
+    }
+
+    // Morse Encode
+    function sendMorseEncode() {
+      const text = document.getElementById("morseEncodeInput").value.trim();
+      const resultDiv = document.getElementById("morseEncodeResult");
+      resultDiv.innerText = "Encoding...";
+      fetch('/encode_morse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      })
+      .then(r => r.json())
+      .then(data => {
+        let result = data.data ?? data.result ?? data.message ?? data;
+        if (typeof result === "object" && result !== null) {
+          if (result.morse) result = result.morse;
+          else result = JSON.stringify(result, null, 2);
+        }
+        resultDiv.innerText = result;
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error: " + (err.message || err);
+      });
+    }
+
+    // Morse Decode
+    function sendMorseDecode() {
+      const morse = document.getElementById("morseDecodeInput").value.trim();
+      const resultDiv = document.getElementById("morseDecodeResult");
+      resultDiv.innerText = "Decoding...";
+      fetch('/decode_morse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ morse })
+      })
+      .then(r => r.json())
+      .then(data => {
+        let result = data.data ?? data.result ?? data.message ?? data;
+        if (typeof result === "object" && result !== null) {
+          if (result.text) result = result.text;
+          else result = JSON.stringify(result, null, 2);
+        }
+        resultDiv.innerText = result;
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error: " + (err.message || err);
+      });
+    }
+
     // Simple Math
     function mathAdd() {
       const a = document.getElementById("addA").value;
@@ -954,7 +1064,24 @@
       const c = document.getElementById("quadC").value;
       fetch(`/math/complex/quadratic?a=${a}&b=${b}&c=${c}`)
         .then(r=>r.json()).then(data=>{
-          document.getElementById("quadResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+          const resultDiv = document.getElementById("quadResult");
+          let result = data.data ?? data.result ?? data;
+          // If result is an object, format it nicely
+          if (typeof result === "object" && result !== null) {
+            let out = "";
+            if (result.roots !== undefined) {
+              out += `Roots: ${Array.isArray(result.roots) ? result.roots.join(", ") : result.roots}<br>`;
+            }
+            if (result.discriminant !== undefined) {
+              out += `Discriminant: ${result.discriminant}<br>`;
+            }
+            if (result.message) {
+              out += `${result.message}<br>`;
+            }
+            resultDiv.innerHTML = out || JSON.stringify(result);
+          } else {
+            resultDiv.innerText = result;
+          }
         });
     }
 
@@ -1088,6 +1215,27 @@
       .catch(err => {
         resultDiv.innerText = "Error generating image.\n" + (err.message || err);
       });
+    }
+
+    // Scientific Calculator
+    function calculateScientific() {
+      const expr = document.getElementById("sciExpr").value;
+      const resultDiv = document.getElementById("sciResult");
+      resultDiv.innerText = "Calculating...";
+      fetch(`/scientific_calc?expr=${encodeURIComponent(expr)}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 200 && data.result !== undefined) {
+            resultDiv.innerText = `Result: ${data.result}`;
+          } else if (data.message) {
+            resultDiv.innerText = data.message;
+          } else {
+            resultDiv.innerText = "Error or unsupported expression.";
+          }
+        })
+        .catch(() => {
+          resultDiv.innerText = "Calculation error.";
+        });
     }
   </script>
 </body>

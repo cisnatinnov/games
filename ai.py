@@ -8,6 +8,7 @@ from libraries.math.threeD import cube, cuboid, cylinder
 from libraries.securities import decode_morse, encode_morse
 from libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
 from chat import chat, generate_image
+import math
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
 
@@ -86,55 +87,84 @@ def ner_generator():
 # Simple math operations
 @app.route('/math/simple/add', methods=['GET'])
 def add_op():
-  a = float(request.args.get('a'))
-  b = float(request.args.get('b'))
+  a_str = request.args.get('a')
+  b_str = request.args.get('b')
+  if a_str is None or b_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameters a or b'}), 400
+  a = float(a_str)
+  b = float(b_str)
   resp = add(a, b)
   return jsonify(resp), resp['status']
 
 @app.route('/math/simple/subtract', methods=['GET'])
 def subtract_op():
-  a = float(request.args.get('a'))
-  b = float(request.args.get('b'))
+  a_str = request.args.get('a')
+  b_str = request.args.get('b')
+  if a_str is None or b_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameters a or b'}), 400
+  a = float(a_str)
+  b = float(b_str)
   resp = subtract(a, b)
   return jsonify(resp), resp['status']
 
 @app.route('/math/simple/multiply', methods=['GET'])
 def multiply_op():
-  a = float(request.args.get('a'))
-  b = float(request.args.get('b'))
+  a_str = request.args.get('a')
+  b_str = request.args.get('b')
+  if a_str is None or b_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameters a or b'}), 400
+  a = float(a_str)
+  b = float(b_str)
   resp = multiply(a, b)
   return jsonify(resp), resp['status']
 
 @app.route('/math/simple/divide', methods=['GET'])
 def divide_op():
-  a = float(request.args.get('a'))
-  b = float(request.args.get('b'))
+  a_str = request.args.get('a')
+  b_str = request.args.get('b')
+  if a_str is None or b_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameters a or b'}), 400
+  a = float(a_str)
+  b = float(b_str)
   resp = divide(a, b)
   return jsonify(resp), resp['status']
 
 # Complex math operations
 @app.route('/math/complex/factorial', methods=['GET'])
 def factorial_op():
-  n = int(request.args.get('n'))
+  n_str = request.args.get('n')
+  if n_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameter n'}), 400
+  n = int(n_str)
   resp = factorial(n)
   return jsonify(resp), resp['status']
 
 @app.route('/math/complex/power', methods=['GET'])
 def power_op():
-  base = float(request.args.get('base'))
-  exp = float(request.args.get('exp'))
+  base_str = request.args.get('base')
+  exp_str = request.args.get('exp')
+  if base_str is None or exp_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameters base or exp'}), 400
+  base = float(base_str)
+  exp = float(exp_str)
   resp = power(base, exp)
   return jsonify(resp), resp['status']
 
 @app.route('/math/complex/sqrt', methods=['GET'])
 def sqrt_op():
-  num = float(request.args.get('num'))
+  num_str = request.args.get('num')
+  if num_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameter num'}), 400
+  num = float(num_str)
   resp = sqrt(num)
   return jsonify(resp), resp['status']
 
 @app.route('/math/complex/log', methods=['GET'])
 def log_op():
-  num = float(request.args.get('num'))
+  num_str = request.args.get('num')
+  if num_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameter num'}), 400
+  num = float(num_str)
   base = request.args.get('base')
   resp = log(num, base)
   return jsonify(resp), resp['status']
@@ -143,9 +173,14 @@ def log_op():
 @app.route('/math/complex/quadratic', methods=['GET'])
 def quadratic_op():
   # Get the coefficients a, b, and c from the query parameters
-  a = float(request.args.get('a'))
-  b = float(request.args.get('b'))
-  c = float(request.args.get('c'))
+  a_str = request.args.get('a')
+  b_str = request.args.get('b')
+  c_str = request.args.get('c')
+  if a_str is None or b_str is None or c_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameters a, b, or c'}), 400
+  a = float(a_str)
+  b = float(b_str)
+  c = float(c_str)
 
   resp = quadratic(a, b, c)
   return jsonify(resp), resp['status']
@@ -153,8 +188,12 @@ def quadratic_op():
 # 2D Shapes
 @app.route('/math/2d/rectangle', methods=['GET'])
 def rectangle_op():
-  width = float(request.args.get('width'))
-  height = float(request.args.get('height'))
+  width_str = request.args.get('width')
+  height_str = request.args.get('height')
+  if width_str is None or height_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameters width or height'}), 400
+  width = float(width_str)
+  height = float(height_str)
   resp = rectangle(width, height)
   return jsonify(resp), resp['status']
 
@@ -187,7 +226,10 @@ def cube_op():
 
 @app.route('/math/3d/sphere', methods=['GET'])
 def sphere():
-  radius = float(request.args.get('radius'))
+  radius_str = request.args.get('radius')
+  if radius_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameter radius'}), 400
+  radius = float(radius_str)
   resp = sphere(radius)
   return jsonify(resp), resp['status']
 
@@ -253,6 +295,26 @@ def encode_morse_op():
   text = data.get('text')
   resp = encode_morse(text)
   return jsonify(resp), resp['status']
-  
+
+@app.route('/scientific_calc')
+def scientific_calc():
+  expr = request.args.get('expr', '')
+  try:
+    # Safe eval: allow only math functions/constants
+    allowed_names = {
+      k: getattr(math, k) for k in [
+        'sin', 'cos', 'tan', 'log', 'sqrt', 'exp', 'fabs', 'factorial', 'pi', 'e', 'pow'
+      ]
+    }
+    allowed_names['abs'] = abs
+    allowed_names['^'] = pow
+    # Replace ^ with ** for exponentiation
+    expr = expr.replace('^', '**')
+    # Evaluate expression
+    result = eval(expr, {"__builtins__": None}, allowed_names)
+    return jsonify({'status': 200, 'result': result})
+  except Exception as ex:
+    return jsonify({'status': 400, 'message': f'Error: {str(ex)}'})
+
 if __name__ == "__main__":
   app.run(debug=True, threaded=True)
