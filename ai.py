@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from libraries.math.complex import factorial, log, power, quadratic, sqrt
 from libraries.math.simple import add, divide, multiply, subtract
 from libraries.math.twoD import circle, rectangle, square, triangle
-from libraries.math.threeD import cube, cuboid, cylinder
+from libraries.math.threeD import cube, cuboid, cylinder, sphere
 from libraries.securities import decode_morse, encode_morse
 from libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
 from chat import chat, generate_image
@@ -199,33 +199,47 @@ def rectangle_op():
 
 @app.route('/math/2d/circle', methods=['GET'])
 def circle_op():
-  radius = float(request.args.get('radius'))
+  radius_str = request.args.get('radius')
+  if radius_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameter radius'}), 400
+  radius = float(radius_str)
   resp = circle(radius)
   return jsonify(resp), resp['status']
 
 @app.route('/math/2d/square', methods=['GET'])
 def square_op():
-  side = float(request.args.get('side'))
+  side_str = request.args.get('side')
+  if side_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameter side'}), 400
+  side = float(side_str)
   resp = square(side)
   return jsonify(resp), resp['status']
 
 @app.route('/math/2d/triangle', methods=['GET'])
 def triangle_op():
-  width = float(request.args.get('width'))
-  height = float(request.args.get('height'))
-  side = float(request.args.get('side'))
+  width_str = request.args.get('width')
+  height_str = request.args.get('height')
+  side_str = request.args.get('side')
+  if width_str is None or height_str is None or side_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameters width, height, or side'}), 400
+  width = float(width_str)
+  height = float(height_str)
+  side = float(side_str)
   resp = triangle(width, height, side)
   return jsonify(resp), resp['status']
 
 # 3D Shapes
 @app.route('/math/3d/cube', methods=['GET'])
 def cube_op():
-  side = float(request.args.get('side'))
+  side_str = request.args.get('side')
+  if side_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameter side'}), 400
+  side = float(side_str)
   resp = cube(side)
   return jsonify(resp), resp['status']
 
 @app.route('/math/3d/sphere', methods=['GET'])
-def sphere():
+def sphere_op():
   radius_str = request.args.get('radius')
   if radius_str is None:
     return jsonify({'status': 400, 'message': 'Missing parameter radius'}), 400
@@ -235,16 +249,26 @@ def sphere():
 
 @app.route('/math/3d/cylinder', methods=['GET'])
 def cylinder_op():
-  radius = float(request.args.get('radius'))
-  height = float(request.args.get('height'))
+  radius_str = request.args.get('radius')
+  height_str = request.args.get('radius')
+  if radius_str is None or height_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameter radius'}), 400
+  radius = float(radius_str)
+  height = float(height_str)
   resp = cylinder(radius, height)
   return jsonify(resp), resp['status']
 
 @app.route('/math/3d/cuboid', methods=['GET'])
 def cuboid_op():
-  side = float(request.args.get('side'))
-  length = float(request.args.get('length'))
-  height = float(request.args.get('height'))
+  side_str = request.args.get('side')
+  length_str = request.args.get('length')
+  height_str = request.args.get('height')
+  # Check if all required parameters are provided
+  if side_str is None or length_str is None or height_str is None:
+    return jsonify({'status': 400, 'message': 'Missing parameters side or length'}), 400
+  side = float(side_str)
+  length = float(length_str)
+  height = float(height_str)
   resp = cuboid(side, length, height)
   return jsonify(resp), resp['status']
 
@@ -287,14 +311,14 @@ def decode_morse_op():
   data = request.get_json()
   morse = data.get('morse')
   resp = decode_morse(morse)
-  return jsonify(resp), resp['status']
+  return jsonify(resp), 200
 
 @app.route('/encode_morse', methods=['POST'])
 def encode_morse_op():
   data = request.get_json()
   text = data.get('text')
   resp = encode_morse(text)
-  return jsonify(resp), resp['status']
+  return jsonify(resp), 200
 
 @app.route('/scientific_calc')
 def scientific_calc():
