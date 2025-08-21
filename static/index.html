@@ -96,7 +96,7 @@
       background: rgba(255, 255, 255, 0.2);
       margin: 25px 0;
     }
-    #diceResult, #hangmanResult, #storyResult, #rpsResult {
+    #diceResult, #hangmanResult, #storyResult, #rpsResult, #reply {
       font-family: 'Courier New', Courier, monospace;
       margin-top: 20px;
       padding: 15px;
@@ -257,7 +257,7 @@
         <label for="text" style="font-weight:bold;color:#ffd700;">AI Chat:</label><br>
         <input id="text" placeholder="Type your message..." />
         <button onclick="send()">Send</button>
-        <textarea id="reply" cols="30" rows="5" disabled placeholder="AI reply will appear here..."></textarea>
+        <p id="reply">AI reply will appear here...</p>
       </div>
     </section>
     <!-- Math Section -->
@@ -496,7 +496,7 @@
       const result = document.getElementById("result");
 
       // Correct native JavaScript code
-      document.getElementById("reply").value = "reply...";
+      document.getElementById("reply").innerText = "reply...";
       fetch('/chat', {
         method: 'POST',
         headers: {
@@ -518,7 +518,7 @@
       })
       .then(data => {
         console.log('Success:', data);
-        document.getElementById("reply").value = data.reply;
+        document.getElementById("reply").innerText = data.reply;
       });
     }
 
@@ -1201,7 +1201,7 @@
       .then(data => {
         // If the response is a URL, show image; if base64, show image; else show text
         if (typeof data.image === "string" && data.image) {
-          if (data.image.startsWith("http")) {
+          if (data.image.startsWith("http") || data.image.startsWith("https")) {
             resultDiv.innerHTML = `<img src="${data.image}" alt="Generated Image" style="max-width:100%;border-radius:12px;box-shadow:0 2px 8px #222;">`;
           } else if (data.image.startsWith("data:image")) {
             resultDiv.innerHTML = `<img src="${data.image}" alt="Generated Image" style="max-width:100%;border-radius:12px;box-shadow:0 2px 8px #222;">`;

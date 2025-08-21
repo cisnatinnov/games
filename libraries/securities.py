@@ -16,7 +16,7 @@ def gen_bcrypt(password: str) -> str:
         return hashed.decode('utf-8')
     except Exception as e:
         print(e)
-        return None
+        return None # type: ignore
 
 def compare(pass_hash: str, password: str) -> bool:
     try:
@@ -31,16 +31,16 @@ def compare(pass_hash: str, password: str) -> bool:
 def gen_jwt(payload: dict) -> str:
     try:
         secret = os.getenv("JWT_SECRET", "default_secret")
-        token = jwt.encode(payload, secret, algorithm="HS256")
+        token = jwt.encode(payload, secret, algorithm="HS256") # type: ignore
         return token
     except Exception as e:
         print(e)
-        return None
+        return None # type: ignore
 
 def verify_jwt(token: str):
     try:
         secret = os.getenv("JWT_SECRET", "default_secret")
-        decoded = jwt.decode(token, secret, algorithms=["HS256"])
+        decoded = jwt.decode(token, secret, algorithms=["HS256"]) # type: ignore
         return decoded
     except Exception as e:
         print(e)

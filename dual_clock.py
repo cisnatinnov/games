@@ -40,7 +40,7 @@ class DualClockApp:
         self.canvas = tk.Canvas(self.root, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True, padx=10, pady=10)
 
-        self.canvas.bind("<Configure>", self._on_resize)
+        self.canvas.bind("<Configure>", self._on_resize) # type: ignore
 
         # precompute face items
         self.face_items = []
