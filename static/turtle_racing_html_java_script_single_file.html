@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Turtle Racing</title>
+  <style>
+    :root {
+      --bg: #0f172a;         /* slate-900 */
+      --panel: #111827;      /* gray-900 */
+      --muted: #1f2937;      /* gray-800 */
+      --text: #e5e7eb;       /* gray-200 */
+      --accent: #22d3ee;     /* cyan-400 */
+      --good: #34d399;       /* emerald-400 */
+      --warn: #fbbf24;       /* amber-400 */
+      --danger: #fb7185;     /* rose-400 */
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 800px at 50% -10%, #0b122b 0%, var(--bg) 55%);
+      color: var(--text);
+      display: grid; place-items: start center; padding: 24px;
+    }
+
+    .app { width: min(100%, 1000px); }
+
+    .title {
+      display:flex; align-items:center; gap:10px; margin: 0 0 14px; font-weight: 800; letter-spacing: .3px;
+    }
+    .title .flag { filter: drop-shadow(0 1px 0 rgba(0,0,0,.2)); font-size: 28px; }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    .controls {
+      display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 14px; margin-bottom: 16px;
+    }
+    .controls form { display:flex; flex-wrap: wrap; gap: 10px; align-items:end; }
+    label { font-size: 12px; opacity: .9; display:block; margin-bottom: 6px; }
+    .field { background: var(--panel); border: 1px solid rgba(255,255,255,.1); padding: 8px 10px; border-radius: 10px; min-width: 120px; }
+    .field input[type="range"] { width: 160px; }
+
+    .buttons { display:flex; gap: 8px; align-items:center; }
+    button {
+      appearance: none; border: none; cursor: pointer; padding: 10px 14px; border-radius: 12px; font-weight: 700;
+      background: var(--muted); color: var(--text); border: 1px solid rgba(255,255,255,.09);
+      transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+    }
+    button.primary { background: linear-gradient(180deg, #0ea5e9, #0284c7); border-color: rgba(255,255,255,.18); }
+    button.success { background: linear-gradient(180deg, #10b981, #059669); border-color: rgba(255,255,255,.18); }
+    button.warn { background: linear-gradient(180deg, #f59e0b, #d97706); border-color: rgba(255,255,255,.18); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    button:active { transform: translateY(1px); }
+
+    .track { position: relative; overflow: hidden; padding: 18px 18px 26px; }
+    .lanes { position: relative; background: #0b122b; border-radius: 14px; padding: 16px 16px; border: 1px solid rgba(255,255,255,.08); }
+
+    .lane { position: relative; height: 64px; border-radius: 10px; display:flex; align-items:center; padding-left: 12px; overflow: hidden; }
+    .lane + .lane { margin-top: 10px; }
+    .lane::before {
+      content: ""; position:absolute; inset:0;
+      background: repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 10px, transparent 10px 20px);
+    }
+
+    .finish {
+      position: absolute; top: 0; right: 24px; width: 40px; height: 100%; pointer-events:none;
+      background-image:
+        linear-gradient(45deg, rgba(255,255,255,.9) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,.9) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,.9) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,.9) 75%);
+      background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0; opacity:.7; border-radius: 8px;
+    }
+    .finish-flag { position:absolute; right: 12px; top: -8px; font-size: 28px; transform: rotate(-6deg); }
+
+    .turtle {
+      position: absolute; left: 0; width: 56px; height: 56px; border-radius: 14px; display:grid; place-items:center; font-size: 28px; user-select:none;
+      box-shadow: 0 10px 18px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.12);
+      border: 1px solid rgba(0,0,0,.4);
+      transition: transform .12s ease;
+    }
+    .turtle .num { position:absolute; bottom: -4px; right: -4px; font-size: 11px; font-weight: 900; padding: 4px 6px; border-radius: 10px; background: rgba(0,0,0,.45); color: white; border: 1px solid rgba(255,255,255,.2); }
+    .turtle.win { transform: scale(1.08); box-shadow: 0 16px 30px rgba(0,0,0,.5), 0 0 0 6px rgba(34,211,238,.25); }
+
+    .meter { position:absolute; bottom: 6px; left: 16px; font-size: 12px; opacity:.8; }
+
+    .banner { position: fixed; inset: 0; display: none; place-items: center; background: rgba(0,0,0,.55); }
+    .banner.show { display: grid; }
+    .banner .inner { background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.05)); border: 1px solid rgba(255,255,255,.12); padding: 22px; border-radius: 16px; text-align:center; max-width: 420px; }
+    .banner h2 { margin: 0 0 6px; }
+
+    .legend { display:flex; gap: 8px; flex-wrap: wrap; padding: 12px 16px 16px; font-size: 13px; opacity:.9; }
+    .swatch { width: 10px; height: 10px; border-radius: 4px; display:inline-block; margin-right: 6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.35); }
+
+    .footer { text-align:center; font-size: 12px; opacity:.7; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1 class="title"><span class="flag">🏁</span> Turtle Racing</h1>
+
+    <section class="card controls">
+      <form id="config">
+        <div class="field">
+          <label for="count">Turtles</label>
+          <select id="count">
+            <option>3</option>
+            <option>4</option>
+            <option selected>5</option>
+            <option>6</option>
+            <option>7</option>
+            <option>8</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="distance">Track length <span id="distanceLabel">700</span> px</label>
+          <input type="range" id="distance" min="400" max="1200" value="700" />
+        </div>
+        <div class="field">
+          <label for="chaos">Chaos (random jitter)</label>
+          <input type="range" id="chaos" min="0" max="12" value="6" />
+        </div>
+        <div class="field">
+          <label for="seed">Random seed</label>
+          <input type="number" id="seed" placeholder="optional" min="0" step="1" />
+        </div>
+      </form>
+      <div class="buttons">
+        <button id="start" class="primary">Start</button>
+        <button id="pause">Pause</button>
+        <button id="reset" class="warn">Reset</button>
+        <button id="shuffle" class="success" title="New speeds/colors">Shuffle</button>
+      </div>
+    </section>
+
+    <section id="race" class="card track">
+      <div class="lanes" id="lanes"></div>
+      <div class="finish" id="finish"></div>
+      <div class="finish-flag">🏁</div>
+      <div class="meter" id="meter">0 px</div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <div class="footer">Tip: set a seed to make results reproducible.</div>
+  </div>
+
+  <div class="banner" id="banner">
+    <div class="inner">
+      <h2 id="winnerText">🐢 Winner!</h2>
+      <p id="timeText"></p>
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+        <button id="again" class="primary">Race again</button>
+        <button id="closeBanner">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Utility: seeded RNG for reproducibility
+    function mulberry32(seed) {
+      let t = seed >>> 0;
+      return function() {
+        t += 0x6D2B79F5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const $ = sel => document.querySelector(sel);
+    const lanesEl = $('#lanes');
+    const legendEl = $('#legend');
+    const finishEl = $('#finish');
+    const meterEl = $('#meter');
+    const banner = $('#banner');
+
+    const controls = {
+      count: $('#count'),
+      distance: $('#distance'),
+      chaos: $('#chaos'),
+      seed: $('#seed'),
+      start: $('#start'),
+      pause: $('#pause'),
+      reset: $('#reset'),
+      shuffle: $('#shuffle'),
+      again: $('#again'),
+      closeBanner: $('#closeBanner'),
+      distanceLabel: $('#distanceLabel'),
+    };
+
+    let rng = Math.random; // default until seed set
+
+    const COLORS = [
+      '#60a5fa', '#34d399', '#f472b6', '#f59e0b', '#c084fc', '#22d3ee', '#fb7185', '#a3e635', '#38bdf8', '#f43f5e'
+    ];
+
+    const EMOJIS = ['🐢','🐢','🐢','🐢','🐢','🐢','🐢','🐢'];
+
+    let state = {
+      turtles: [], // { id, el, laneEl, color, pos, speed }
+      running: false,
+      finished: false,
+      winner: null,
+      startTs: 0,
+      lastTs: 0,
+      distancePx: parseInt(controls.distance.value, 10),
+      chaos: parseInt(controls.chaos.value, 10),
+    };
+
+    function setSeed() {
+      const s = controls.seed.value;
+      if (s !== '' && !Number.isNaN(Number(s))) {
+        rng = mulberry32(Number(s));
+      } else {
+        rng = Math.random;
+      }
+    }
+
+    function rand(min, max) { return min + (max - min) * rng(); }
+
+    function makeLane(index) {
+      const lane = document.createElement('div');
+      lane.className = 'lane';
+      lane.dataset.index = index;
+      lanesEl.appendChild(lane);
+      return lane;
+    }
+
+    function makeTurtle(index, color) {
+      const el = document.createElement('div');
+      el.className = 'turtle';
+      el.style.background = `radial-gradient(circle at 30% 30%, rgba(255,255,255,.15), transparent 45%), ${color}`;
+      el.style.left = '0px';
+      el.style.zIndex = 10 + index;
+      el.innerHTML = `<span style="transform: translateY(-2px)">${EMOJIS[index % EMOJIS.length]}</span><span class="num">#${index+1}</span>`;
+      return el;
+    }
+
+    function resetRace({reshuffle=false}={}) {
+      state.running = false; state.finished = false; state.winner = null; cancelAnimationFrame(state.rafId);
+      lanesEl.innerHTML = ''; legendEl.innerHTML = '';
+      const count = parseInt(controls.count.value, 10);
+      state.distancePx = parseInt(controls.distance.value, 10);
+      state.chaos = parseInt(controls.chaos.value, 10);
+
+      const turtles = [];
+      const colors = [...COLORS].sort(() => (rng() - .5));
+
+      for (let i = 0; i < count; i++) {
+        const lane = makeLane(i);
+        const color = reshuffle ? colors[i % colors.length] : (colors[i % colors.length]);
+        const t = makeTurtle(i, color);
+        lane.appendChild(t);
+
+        const base = rand(90, 120); // px per second base speed
+        const variance = rand(-10, 10); // give each turtle a personality
+        const speed = Math.max(60, base + variance);
+
+        turtles.push({ id: i, el: t, laneEl: lane, color, pos: 0, speed });
+
+        // legend
+        const item = document.createElement('div');
+        item.innerHTML = `<span class="swatch" style="background:${color}"></span> Turtle #${i+1} · ~${speed.toFixed(0)} px/s`;
+        legendEl.appendChild(item);
+      }
+
+      state.turtles = turtles;
+      updateFinishLine();
+      banner.classList.remove('show');
+      controls.start.disabled = false;
+      controls.pause.disabled = true;
+    }
+
+    function updateFinishLine() {
+      finishEl.style.right = '24px'; // visual only
+      meterEl.textContent = `${state.distancePx} px`;
+      // Also size the lanes wrapper so the track scales with distance
+      lanesEl.style.minHeight = `${state.turtles.length * 74 + 8}px`;
+      lanesEl.style.minWidth = `${Math.max(640, state.distancePx + 140)}px`;
+    }
+
+    function step(ts) {
+      if (!state.running) return;
+      if (!state.startTs) state.startTs = ts;
+      const dt = (ts - (state.lastTs || ts)) / 1000; // seconds
+      state.lastTs = ts;
+
+      const finishX = state.distancePx;
+
+      for (const t of state.turtles) {
+        if (t.done) continue;
+        const jitter = rand(-state.chaos, state.chaos);
+        t.pos += Math.max(0, t.speed * dt + jitter * dt);
+        if (t.pos >= finishX) {
+          t.pos = finishX; t.done = true;
+          if (!state.winner) {
+            state.winner = t; state.finished = true; state.running = false;
+            t.el.classList.add('win');
+            showWinner();
+          }
+        }
+        t.el.style.left = `${t.pos}px`;
+      }
+
+      if (state.running) {
+        state.rafId = requestAnimationFrame(step);
+      }
+    }
+
+    function showWinner() {
+      const elapsed = (state.lastTs - state.startTs) / 1000;
+      $('#winnerText').textContent = `🐢 Winner: Turtle #${state.winner.id + 1}!`;
+      $('#timeText').textContent = `Time: ${elapsed.toFixed(2)}s · Avg speed ~ ${(state.distancePx / elapsed).toFixed(1)} px/s`;
+      banner.classList.add('show');
+    }
+
+    // Event wiring
+    controls.start.addEventListener('click', () => {
+      if (state.finished) return;
+      state.running = true; controls.start.disabled = true; controls.pause.disabled = false; banner.classList.remove('show');
+      state.startTs = 0; state.lastTs = 0; // new run
+      state.rafId = requestAnimationFrame(step);
+    });
+    controls.pause.addEventListener('click', () => {
+      state.running = false; controls.start.disabled = false; controls.pause.disabled = true;
+    });
+    controls.reset.addEventListener('click', () => resetRace());
+    controls.shuffle.addEventListener('click', () => { setSeed(); resetRace({reshuffle:true}); });
+    controls.again.addEventListener('click', () => { banner.classList.remove('show'); resetRace(); });
+    controls.closeBanner.addEventListener('click', () => banner.classList.remove('show'));
+
+    controls.count.addEventListener('change', () => resetRace());
+    controls.distance.addEventListener('input', () => { controls.distanceLabel.textContent = controls.distance.value; state.distancePx = parseInt(controls.distance.value,10); updateFinishLine(); });
+    controls.chaos.addEventListener('input', () => { state.chaos = parseInt(controls.chaos.value,10); });
+    controls.seed.addEventListener('change', () => { setSeed(); resetRace(); });
+
+    // Initialize
+    setSeed();
+    resetRace();
+  </script>
+</body>
+</html>

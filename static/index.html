@@ -392,33 +392,55 @@
           <button onclick="launchHangman()" aria-label="Launch Hangman">Launch Hangman</button>
         </div>
         <div id="hangmanGame">
-            <pre id="hangmanArt"></pre>
-            <p id="hangmanHint"></p>
-            <p>Guessed letters: <span id="guessedLetters"></span></p>
-            <input id="hangmanInput" placeholder="Guess a letter" maxlength="1" />
-            <button onclick="checkGuess()">Submit Guess</button>
-            <p id="hangmanMessage"></p>
-            <button onclick="resetHangman()" id="hangmanResetBtn" style="display:none;">Play Again</button>
+          <pre id="hangmanArt"></pre>
+          <p id="hangmanHint"></p>
+          <p>Guessed letters: <span id="guessedLetters"></span></p>
+          <input id="hangmanInput" placeholder="Guess a letter" maxlength="1" />
+          <button onclick="checkGuess()">Submit Guess</button>
+          <p id="hangmanMessage"></p>
+          <button onclick="resetHangman()" id="hangmanResetBtn" style="display:none;">Play Again</button>
         </div>
       </div>
       <div class="divider"></div>
       <!-- RPS Section -->
       <div id="rps-section" style="margin-bottom:30px;">
         <div id="rps-launcher">
-            <button onclick="launchRPS()" aria-label="Launch Rock Paper Scissors">Launch Rock Paper Scissors</button>
+          <button onclick="launchRPS()" aria-label="Launch Rock Paper Scissors">Launch Rock Paper Scissors</button>
         </div>
         <div id="rpsGame">
-            <p>First to 3 wins!</p>
-            <p>Choose your move:</p>
-            <div id="rpsChoices">
-                <button class="rps-button" onclick="playRPS('rock')">Rock</button>
-                <button class="rps-button" onclick="playRPS('paper')">Paper</button>
-                <button class="rps-button" onclick="playRPS('scissors')">Scissors</button>
-            </div>
-            <pre id="rpsResult"></pre>
-            <p>Score: You <span id="userScore">0</span> | Computer <span id="computerScore">0</span></p>
-            <button onclick="resetRPS()" id="rpsResetBtn" style="display:none;">Play Again</button>
+          <p>First to 3 wins!</p>
+          <p>Choose your move:</p>
+          <div id="rpsChoices">
+            <button class="rps-button" onclick="playRPS('rock')">Rock</button>
+            <button class="rps-button" onclick="playRPS('paper')">Paper</button>
+            <button class="rps-button" onclick="playRPS('scissors')">Scissors</button>
+          </div>
+          <pre id="rpsResult"></pre>
+          <p>Score: You <span id="userScore">0</span> | Computer <span id="computerScore">0</span></p>
+          <button onclick="resetRPS()" id="rpsResetBtn" style="display:none;">Play Again</button>
         </div>
+      </div>
+      <div class="divider"></div>
+      <!-- Turtle Racing Section -->
+      <div id="tr-section" style="margin-bottom:30px;">
+        <a href="/static/turtle_racing_html_java_script_single_file.html"
+          target="_blank"
+          rel="noopener"
+          style="display:inline-block;padding:10px 14px;background:#0ea5e9;color:#fff;border-radius:10px;text-decoration:none;font-weight:700"
+        >
+          Open Turtle Race
+        </a>
+      </div>
+      <div class="divider"></div>
+      <!-- Turtle Racing Section -->
+      <div id="tr-section" style="margin-bottom:30px;">
+        <a href="/static/quiz.html"
+          target="_blank"
+          rel="noopener"
+          style="display:inline-block;padding:10px 14px;background:#0ea5e9;color:#fff;border-radius:10px;text-decoration:none;font-weight:700"
+        >
+          Quiz Game
+        </a>
       </div>
     </section>
     <!-- NER Section -->
