@@ -998,91 +998,91 @@
       const a = document.getElementById("addA").value;
       const b = document.getElementById("addB").value;
       fetch(`/math/simple/add?a=${a}&b=${b}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("addResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("addResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathSubtract() {
       const a = document.getElementById("subA").value;
       const b = document.getElementById("subB").value;
       fetch(`/math/simple/subtract?a=${a}&b=${b}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("subResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("subResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathMultiply() {
       const a = document.getElementById("mulA").value;
       const b = document.getElementById("mulB").value;
       fetch(`/math/simple/multiply?a=${a}&b=${b}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("mulResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("mulResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathDivide() {
       const a = document.getElementById("divA").value;
       const b = document.getElementById("divB").value;
       fetch(`/math/simple/divide?a=${a}&b=${b}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("divResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("divResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
 
     // Complex Math
     function mathFactorial() {
       const n = document.getElementById("factN").value;
       fetch(`/math/complex/factorial?n=${n}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("factResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("factResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathPower() {
       const base = document.getElementById("powBase").value;
       const exp = document.getElementById("powExp").value;
       fetch(`/math/complex/power?base=${base}&exp=${exp}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("powResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("powResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathSqrt() {
       const num = document.getElementById("sqrtNum").value;
       fetch(`/math/complex/sqrt?num=${num}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("sqrtResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("sqrtResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathLog() {
       const num = document.getElementById("logNum").value;
       const base = document.getElementById("logBase").value;
       fetch(`/math/complex/log?num=${num}${base ? `&base=${base}` : ""}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("logResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("logResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathQuadratic() {
       const a = document.getElementById("quadA").value;
       const b = document.getElementById("quadB").value;
       const c = document.getElementById("quadC").value;
       fetch(`/math/complex/quadratic?a=${a}&b=${b}&c=${c}`)
-        .then(r=>r.json()).then(data=>{
-          const resultDiv = document.getElementById("quadResult");
-          let result = data.data ?? data.result ?? data;
-          // If result is an object, format it nicely
-          if (typeof result === "object" && result !== null) {
-            let out = "";
-            if (result.roots !== undefined) {
-              out += `Roots: ${Array.isArray(result.roots) ? result.roots.join(", ") : result.roots}<br>`;
-            }
-            if (result.discriminant !== undefined) {
-              out += `Discriminant: ${result.discriminant}<br>`;
-            }
-            if (result.message) {
-              out += `${result.message}<br>`;
-            }
-            resultDiv.innerHTML = out || JSON.stringify(result);
-          } else {
-            resultDiv.innerText = result;
+      .then(r=>r.json()).then(data=>{
+        const resultDiv = document.getElementById("quadResult");
+        let result = data.data ?? data.result ?? data;
+        // If result is an object, format it nicely
+        if (typeof result === "object" && result !== null) {
+          let out = "";
+          if (result.roots !== undefined) {
+            out += `Roots: ${Array.isArray(result.roots) ? result.roots.join(", ") : result.roots}<br>`;
           }
-        });
+          if (result.discriminant !== undefined) {
+            out += `Discriminant: ${result.discriminant}<br>`;
+          }
+          if (result.message) {
+            out += `${result.message}<br>`;
+          }
+          resultDiv.innerHTML = out || JSON.stringify(result);
+        } else {
+          resultDiv.innerText = result;
+        }
+      });
     }
 
     // 2D Shapes
@@ -1090,41 +1090,41 @@
       const width = document.getElementById("rectWidth").value;
       const height = document.getElementById("rectHeight").value;
       fetch(`/math/2d/rectangle?width=${width}&height=${height}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("rectResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("rectResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathCircle() {
       const radius = document.getElementById("circleRadius").value;
       fetch(`/math/2d/circle?radius=${radius}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("circleResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("circleResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathSquare() {
       const side = document.getElementById("squareSide").value;
       fetch(`/math/2d/square?side=${side}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("squareResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("squareResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathTriangle() {
       const width = document.getElementById("triWidth").value;
       const height = document.getElementById("triHeight").value;
       const side = document.getElementById("triSide").value;
       fetch(`/math/2d/triangle?width=${width}&height=${height}&side=${side}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("triResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("triResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
 
     // 3D Shapes
     function mathCube() {
       const side = document.getElementById("cubeSide").value;
       fetch(`/math/3d/cube?side=${side}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("cubeResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        document.getElementById("cubeResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+      });
     }
     function mathSphere() {
       const radius = document.getElementById("sphereRadius").value;
@@ -1160,13 +1160,13 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ weight: Number(weight), height: Number(height) })
       })
-        .then(r=>r.json()).then(data=>{
-          if (data.data) {
-            document.getElementById("bmiResult").innerText = `BMI: ${data.data.bmi} - ${data.data.result}`;
-          } else {
-            document.getElementById("bmiResult").innerText = data.message || JSON.stringify(data);
-          }
-        });
+      .then(r=>r.json()).then(data=>{
+        if (data.data) {
+          document.getElementById("bmiResult").innerText = `BMI: ${data.data.bmi} - ${data.data.result}`;
+        } else {
+          document.getElementById("bmiResult").innerText = data.message || JSON.stringify(data);
+        }
+      });
     }
 
     // Menu navigation logic
@@ -1223,19 +1223,19 @@
       const resultDiv = document.getElementById("sciResult");
       resultDiv.innerText = "Calculating...";
       fetch(`/scientific_calc?expr=${encodeURIComponent(expr)}`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.status === 200 && data.result !== undefined) {
-            resultDiv.innerText = `Result: ${data.result}`;
-          } else if (data.message) {
-            resultDiv.innerText = data.message;
-          } else {
-            resultDiv.innerText = "Error or unsupported expression.";
-          }
-        })
-        .catch(() => {
-          resultDiv.innerText = "Calculation error.";
-        });
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 200 && data.result !== undefined) {
+          resultDiv.innerText = `Result: ${data.result}`;
+        } else if (data.message) {
+          resultDiv.innerText = data.message;
+        } else {
+          resultDiv.innerText = "Error or unsupported expression.";
+        }
+      })
+      .catch(() => {
+        resultDiv.innerText = "Calculation error.";
+      });
     }
   </script>
 </body>
