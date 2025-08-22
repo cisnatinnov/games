@@ -370,8 +370,9 @@
         <div id="adventure">
           <p id="story">Enter your name to begin the adventure:</p>
           <input id="playerInput" placeholder="Your name" />
-          <button onclick="nextStep()" aria-label="Submit your choice">Submit</button>
           <pre id="storyResult"></pre>
+          <button onclick="nextStep()" aria-label="Submit your choice">Submit</button>
+          <button onclick="resetAdventure()" aria-label="Reset your game" id="resetAdv" style="display: none;">Reset</button>
         </div>
       </div>
       <div class="divider"></div>
@@ -498,9 +499,9 @@
     </section>
   </main>
 
-  <audio id="winSound" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_6b906fceba.mp3?filename=success-1-6297.mp3"></audio>
-  <audio id="loseSound" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_558ef4ff44.mp3?filename=negative-beeps-6008.mp3"></audio>
-  <audio id="typeSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_0b8dbf25f1.mp3?filename=mechanical-keyboard-typing-6712.mp3"></audio>
+  <audio id="winSound" src="/assets/sounds/victory-chime-366449.mp3"></audio>
+  <audio id="loseSound" src="/assets/sounds/losing-horn-313723.mp3"></audio>
+  <audio id="typeSound" src="/assets/sounds/type-ui-38782.mp3"></audio>
 
   <script>
     // Move showSection function to the very top so it's defined before any inline onclick handlers
@@ -619,19 +620,20 @@
       const input = document.getElementById("playerInput").value.trim().toLowerCase();
       document.getElementById("playerInput").value = "";
       document.getElementById("storyResult").innerText = "";
+      document.getElementById("resetAdv").style.display = "none";
 
       if (step === 0) {
         setBackground("play");
         playerName = input || "Adventurer";
-        typeWriterEffect(`Welcome ${playerName}! You are on a dirt road. It has come to an end and you can go left or right. Which way would you like to go?`, "story");
+        typeWriterEffect(`Welcome ${playerName}! You are on a dirt road. It has come to an end \nand you can go left or right. Which way would you like to go?`, "storyResult");
         step = 1;
       }
       else if (step === 1) {
         if (input === "left") {
-          typeWriterEffect("You come to a river. You can walk around it or swim across. Type 'walk' or 'swim':", "story");
+          typeWriterEffect("You come to a river. You can walk around it or swim across. \nType 'walk' or 'swim':", "storyResult");
           step = 2;
         } else if (input === "right") {
-          typeWriterEffect("You come to a bridge, it looks wobbly. Do you want to cross it or head back? Type 'cross' or 'back':", "story");
+          typeWriterEffect("You come to a bridge, it looks wobbly. Do you want to cross \nit or head back? Type 'cross' or 'back':", "storyResult");
           step = 3;
         } else {
           loseAdventure(`Not a valid option. You lose.\nThank you for trying, ${playerName}`);
@@ -641,7 +643,7 @@
         if (input === "swim") {
           loseAdventure("You swam across and were eaten by an alligator.");
         } else if (input === "walk") {
-          loseAdventure("You walked for many miles, ran out of water and lost the game.");
+          loseAdventure("You walked for many miles, ran out of water and \nlost the game.");
         } else {
           loseAdventure("Not a valid option. You lose.");
         }
@@ -650,7 +652,7 @@
         if (input === "back") {
           loseAdventure("You go back and lose.");
         } else if (input === "cross") {
-          typeWriterEffect("You cross the bridge and meet a stranger. Do you talk to them? Type 'yes' or 'no':", "story");
+          typeWriterEffect("You cross the bridge and meet a stranger. Do you talk to \nthem? Type 'yes' or 'no':", "storyResult");
           step = 4;
         } else {
           loseAdventure("Not a valid option. You lose.");
@@ -667,18 +669,29 @@
       }
     }
 
+    function resetAdventure() {
+      document.getElementById("playerInput").value = "";
+      document.getElementById("storyResult").innerText = "";
+      step = 0;
+      playerName = "";
+      setBackground("play");
+      document.getElementById("resetAdv").style.display = "none";
+    }
+
     function winAdventure(message) {
       setBackground("win");
       document.getElementById("winSound").play().catch(()=>{});
-      typeWriterEffect(message + `\nThank you for playing, ${playerName}`, "story");
+      typeWriterEffect(message + `\nThank you for playing, ${playerName}`, "storyResult");
       step = -1;
+      document.getElementById("resetAdv").style.display = "inline-block";
     }
 
     function loseAdventure(message) {
       setBackground("lose");
       document.getElementById("loseSound").play().catch(()=>{});
-      typeWriterEffect(message + `\nThank you for playing, ${playerName}`, "story");
+      typeWriterEffect(message + `\nThank you for playing, ${playerName}`, "storyResult");
       step = -1;
+      document.getElementById("resetAdv").style.display = "inline-block";
     }
     
     function resetDiceRoller() {
