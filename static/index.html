@@ -471,6 +471,15 @@
             <div id="generatorResult" style="margin-top:10px;white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
           </div>
         </details>
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">Text Tagging</summary>
+          <div style="margin-top:10px;">
+            <label for="taggingInput" style="font-weight:bold;">Prompt:</label>
+            <input id="taggingInput" placeholder="Enter prompt for text tagging" style="width:100%;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;padding:10px;font-size:1.05rem;background:rgba(255,255,255,0.85);color:#222;">
+            <button onclick="sendTagging()" style="width:100%;margin-top:8px;">Generate</button>
+            <div id="taggingResult" style="margin-top:10px;white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
+          </div>
+        </details>
       </div>
       <div style="margin-top:24px;">
         <details>
@@ -977,6 +986,51 @@
       })
       .catch(err => {
         resultDiv.innerText = "Error: " + (err.message || err);
+      });
+    }
+
+    // Tagging Route Function
+    function sendTagging() {
+      const text = document.getElementById("taggingInput").value.trim();
+      document.getElementById("taggingResult").innerText = "Analyzing...";
+      fetch('/ner/tagging', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        return response.json();
+      })
+      .then(resp => {
+        let data = resp.data || resp;
+        let result = "";
+        
+        // Correctly process entities and tokens from the API response
+        if (data.entities && Array.isArray(data.entities)) {
+          result += "Entities:\n";
+          data.entities.forEach(entity => {
+            result += `- label: ${entity.label}, text: "${entity.text}"\n`;
+          });
+        }
+        
+        if (data.tokens && Array.isArray(data.tokens)) {
+          result += "\nTokens:\n";
+          data.tokens.forEach(token => {
+            result += `- text: "${token.text}", lemma: "${token.lemma}", pos: "${token.pos}", tag: "${token.tag}"\n`;
+          });
+        }
+        
+        if (result === "") {
+          result = "No entities or tokens found.";
+        }
+        
+        document.getElementById("taggingResult").innerText = result;
+      })
+      .catch((err) => {
+        document.getElementById("taggingResult").innerText = "Error analyzing entities.\n" + (err.message || err);
       });
     }
 
