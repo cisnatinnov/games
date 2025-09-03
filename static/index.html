@@ -242,16 +242,15 @@
       <h2>A collection of simple games</h2>
     </header>
 
-    <!-- Menu Navigation -->
     <nav style="margin-bottom:30px;">
       <button onclick="showSection('ai-chat-section')">AI Chat</button>
       <button onclick="showSection('math-section-group')">Math</button>
       <button onclick="showSection('game-section-group')">Games</button>
       <button onclick="showSection('ner-section-group')">NER</button>
       <button onclick="showSection('image-section-group')">Image Generator</button>
+      <button onclick="showSection('image-classifier-section')">Image Classifier</button>
     </nav>
 
-    <!-- AI Chat Section -->
     <section id="ai-chat-section" style="margin-bottom:30px;">
       <div id="chat">
         <label for="text" style="font-weight:bold;color:#ffd700;">AI Chat:</label><br>
@@ -260,7 +259,6 @@
         <p id="reply">AI reply will appear here...</p>
       </div>
     </section>
-    <!-- Math Section -->
     <section id="math-section-group" style="margin-bottom:30px; display:none;">
       <div id="math-section" style="margin-top:20px;">
         <details open>
@@ -354,9 +352,7 @@
         </details>
       </div>
     </section>
-    <!-- Game Section (grouped) -->
     <section id="game-section-group" style="margin-bottom:30px; display:none;">
-      <!-- Game Launchers Section -->
       <div id="game-launchers-section" style="margin-bottom:30px;">
         <button onclick="launchDualClock()" aria-label="Launch Dual Clock">Launch Dual Clock</button>
         <div class="divider"></div>
@@ -365,7 +361,6 @@
         <button onclick="launchCoinCatcher()" aria-label="Launch Coin Catcher">Launch Coin Catcher</button>
       </div>
       <div class="divider"></div>
-      <!-- Adventure Section -->
       <div id="adventure-section" style="margin-bottom:30px;">
         <div id="adventure">
           <p id="story">Enter your name to begin the adventure:</p>
@@ -376,7 +371,6 @@
         </div>
       </div>
       <div class="divider"></div>
-      <!-- Dice Roller Section -->
       <div id="dice-roller-section" style="margin-bottom:30px;">
         <div id="dice-roller">
           <p>Enter the number of dice to roll:</p>
@@ -387,7 +381,6 @@
         <pre id="diceResult" style="white-space: pre-wrap; text-align: left;"></pre>
       </div>
       <div class="divider"></div>
-      <!-- Hangman Section -->
       <div id="hangman-section" style="margin-bottom:30px;">
         <div id="hangman-launcher">
           <button onclick="launchHangman()" aria-label="Launch Hangman">Launch Hangman</button>
@@ -403,7 +396,6 @@
         </div>
       </div>
       <div class="divider"></div>
-      <!-- RPS Section -->
       <div id="rps-section" style="margin-bottom:30px;">
         <div id="rps-launcher">
           <button onclick="launchRPS()" aria-label="Launch Rock Paper Scissors">Launch Rock Paper Scissors</button>
@@ -422,7 +414,6 @@
         </div>
       </div>
       <div class="divider"></div>
-      <!-- Turtle Racing Section -->
       <div id="tr-section" style="margin-bottom:30px;">
         <a href="/static/turtle_racing_html_java_script_single_file.html"
           target="_blank"
@@ -433,7 +424,6 @@
         </a>
       </div>
       <div class="divider"></div>
-      <!-- Turtle Racing Section -->
       <div id="tr-section" style="margin-bottom:30px;">
         <a href="/static/quiz.html"
           target="_blank"
@@ -444,7 +434,6 @@
         </a>
       </div>
     </section>
-    <!-- NER Section -->
     <section id="ner-section-group" style="margin-bottom:30px; display:none;">
       <div id="ner-section">
         <p>Named Entity Recognition (NER):</p>
@@ -497,7 +486,6 @@
         </details>
       </div>
     </section>
-    <!-- Image Generator Section -->
     <section id="image-section-group" style="margin-bottom:30px; display:none;">
       <div id="image-generator-section" style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;">
         <p style="font-size:1.1rem;font-weight:bold;color:#ffd700;text-shadow:1px 1px 2px #222;">Image Generator (Gemini)</p>
@@ -506,20 +494,33 @@
         <div id="imageResult" style="margin-top:16px;"></div>
       </div>
     </section>
-  </main>
+
+    <section id="image-classifier-section" style="margin-bottom:30px; display:none;">
+      <div id="image-classifier-container" style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;text-align:left;">
+        <p style="font-size:1.1rem;font-weight:bold;color:#ffd700;text-shadow:1px 1px 2px #222;">Image Classifier (Gemini Vision)</p>
+        <form id="imageClassifierForm">
+          <input type="file" id="imageFile" name="file" accept="image/*" required style="width:100%; margin-bottom:10px; background: #fff; color: #333; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+          <textarea id="imageClassifierPrompt" name="prompt" rows="3" placeholder="Optional: Ask a specific question about the image..." style="width: 100%; padding: 10px; margin-top: 1rem; border-radius: 8px; border: 1px solid #ccc; font-family: inherit; box-sizing: border-box; background: rgba(255,255,255,0.95); color:#333;"></textarea>
+          <button type="submit" style="width:100%; margin-top:1rem; font-size:1.1rem; border-radius:8px; padding:12px 0; background:linear-gradient(45deg,#1e3c72,#2a5298);color:white;font-weight:bold;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(30,60,114,0.12);transition:background 0.3s;">Analyze Image</button>
+        </form>
+        <div id="classifierResult" style="margin-top:16px; text-align: left;"></div>
+      </div>
+    </section>
+    </main>
 
   <audio id="winSound" src="/assets/sounds/victory-chime-366449.mp3"></audio>
   <audio id="loseSound" src="/assets/sounds/losing-horn-313723.mp3"></audio>
   <audio id="typeSound" src="/assets/sounds/type-ui-38782.mp3"></audio>
 
   <script>
-    // Move showSection function to the very top so it's defined before any inline onclick handlers
+    // --- MODIFIED: showSection function updated to include new sections ---
     function showSection(sectionId) {
       document.getElementById('ai-chat-section').style.display = 'none';
       document.getElementById('math-section-group').style.display = 'none';
       document.getElementById('game-section-group').style.display = 'none';
       document.getElementById('ner-section-group').style.display = 'none';
       document.getElementById('image-section-group').style.display = 'none';
+      document.getElementById('image-classifier-section').style.display = 'none'; // Added
       document.getElementById(sectionId).style.display = 'block';
     }
 
@@ -1258,19 +1259,23 @@
       });
     }
 
+    // --- MODIFIED: showSection is defined twice, this one is better placed ---
     // Menu navigation logic
-    function showSection(sectionId) {
-      document.getElementById('ai-chat-section').style.display = 'none';
-      document.getElementById('math-section-group').style.display = 'none';
-      document.getElementById('game-section-group').style.display = 'none';
-      document.getElementById('ner-section-group').style.display = 'none';
-      document.getElementById('image-section-group').style.display = 'none';
-      document.getElementById(sectionId).style.display = 'block';
-    }
+    // function showSection(sectionId) {
+    //   document.getElementById('ai-chat-section').style.display = 'none';
+    //   document.getElementById('math-section-group').style.display = 'none';
+    //   document.getElementById('game-section-group').style.display = 'none';
+    //   document.getElementById('ner-section-group').style.display = 'none';
+    //   document.getElementById('image-section-group').style.display = 'none';
+    //   document.getElementById(sectionId).style.display = 'block';
+    // }
 
     // Show AI Chat by default on load
     window.onload = function() {
       showSection('ai-chat-section');
+      // --- ADDED: Event listener for the new form ---
+      const classifierForm = document.getElementById('imageClassifierForm');
+      classifierForm.addEventListener('submit', classifyImage);
     };
 
     // Image Generator Function
@@ -1278,7 +1283,7 @@
       const prompt = document.getElementById("imagePrompt").value.trim();
       const resultDiv = document.getElementById("imageResult");
       resultDiv.innerHTML = "Generating...";
-      fetch('/image', { // <-- change back to /chat route
+      fetch('/image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: prompt })
@@ -1305,6 +1310,51 @@
         resultDiv.innerText = "Error generating image.\n" + (err.message || err);
       });
     }
+
+    // --- ADDED: New function for Image Classifier ---
+    function classifyImage(event) {
+        event.preventDefault(); // Prevent default form submission
+        
+        const form = event.target;
+        const formData = new FormData(form);
+        const resultDiv = document.getElementById("classifierResult");
+        
+        resultDiv.innerHTML = "Analyzing image...";
+
+        fetch('/classify_image', {
+            method: 'POST',
+            body: formData // Browser automatically sets Content-Type to multipart/form-data
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+              throw new Error(data.error);
+            }
+            // Build the result HTML with a two-column layout
+            let resultHTML = `
+              <div style="display:flex; flex-wrap:wrap; gap: 20px; margin-top: 1rem;">
+                <div style="flex: 1; min-width: 200px;">
+                  <h3 style="color:#ffd700; margin-top:0;">Uploaded Image:</h3>
+                  <img src="${data.image_url}" alt="Uploaded for analysis" style="max-width:100%; border-radius:12px; box-shadow:0 2px 8px #222;">
+                </div>
+                <div style="flex: 2; min-width: 250px;">
+                  <h3 style="color:#ffd700; margin-top:0;">Gemini's Analysis:</h3>
+                  <p style="white-space: pre-wrap; margin-top: 0;">${data.description}</p>
+                </div>
+              </div>
+            `;
+            resultDiv.innerHTML = resultHTML;
+        })
+        .catch(err => {
+            resultDiv.innerText = "Error analyzing image.\n" + (err.message || err);
+        });
+    }
+    // --- END ADDED ---
 
     // Scientific Calculator
     function calculateScientific() {

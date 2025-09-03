@@ -1,13 +1,14 @@
 import os
 import subprocess
 from flask import Flask, request, jsonify, send_from_directory
+from werkzeug.utils import secure_filename # --- ADDED ---
 from libraries.math.complex import factorial, log, power, quadratic, sqrt
 from libraries.math.simple import add, divide, multiply, subtract
 from libraries.math.twoD import circle, rectangle, square, triangle
 from libraries.math.threeD import cube, cuboid, cylinder, sphere
 from libraries.securities import decode_morse, encode_morse
 from libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
-from chat import chat, generate_image
+from chat import chat, generate_image, classify_image # --- MODIFIED: Added classify_image ---
 import math
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
@@ -17,6 +18,12 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 aim_trainer_path = os.path.join(base_dir, "libraries/games/dist/aim_trainer.exe")
 coin_catcher_path = os.path.join(base_dir, "libraries/games/dist/coin_catcher.exe")
 clock_path = os.path.join(base_dir, "dist/dual_clock.exe")
+
+# --- ADDED: Configuration for file uploads ---
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# --- END ADDED ---
 
 @app.route('/')
 def index():
@@ -40,6 +47,40 @@ def image():
     "image": resp
   })
 
+# --- ADDED: New route for handling image classification uploads ---
+@app.route("/classify_image", methods=['POST'])
+def classify_image_op():
+  if 'file' not in request.files:
+    return jsonify({"error": "No file part"}), 400
+  
+  file = request.files['file']
+  
+  if file.filename == '':
+    return jsonify({"error": "No selected file"}), 400
+  
+  prompt = request.form.get('prompt', "Describe this image in detail.")
+
+  if file:
+    filename = secure_filename(file.filename or "uploaded_file")
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(filepath)
+
+    description = classify_image(prompt, filepath)
+    
+    image_url = f'/uploads/{filename}'
+
+    return jsonify({
+        "description": description,
+        "image_url": image_url
+    })
+  
+  return jsonify({"error": "File processing failed"}), 500
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+# --- END ADDED ---
+
 @app.route("/aim_trainer")
 def aim_trainer():
   subprocess.Popen([aim_trainer_path])
@@ -54,6 +95,8 @@ def coin_catcher():
 def dual_clock():
   subprocess.Popen([clock_path])
   return "Dual Clock Launched!"
+
+# ... (rest of the file is unchanged) ...
 
 # Route for basic NER
 @app.route('/ner/tagging', methods=['POST'])
