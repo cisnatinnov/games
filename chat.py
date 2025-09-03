@@ -1,4 +1,5 @@
-from google.generativeai import GenerativeModel, configure
+from google.generativeai.generative_models import GenerativeModel
+from google.generativeai.client import configure
 import os
 from dotenv import load_dotenv
 import PIL.Image
