@@ -9,7 +9,7 @@ from libraries.math.threeD import cube, cuboid, cylinder, sphere
 from libraries.securities import decode_morse, encode_morse
 from libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
 from chat import chat, generate_image, classify_image # --- MODIFIED: Added classify_image ---
-from libraries.math.statistict import mean_ungroup, median_ungroup, mode_ungroup, standard_deviation
+from libraries.math.statisticts import mean_ungroup, mean_group, median_ungroup, median_group, mode_ungroup, mode_group, standard_deviation
 import math
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
@@ -387,10 +387,14 @@ def scientific_calc():
 def mean_op():
   try:
     data = request.get_json()
-    numbers = data.get('numbers', [])
-    if not numbers:
-        return jsonify({'status': 400, 'message': 'No numbers provided'}), 400
-    result = mean_ungroup(numbers)
+    if 'numbers' in data:  # Ungrouped data
+      numbers = data['numbers']
+      result = mean_ungroup(numbers)
+    else:  # Grouped data
+      lower_bound = data.get('lower_bound')
+      class_width = data.get('class_width')
+      frequencies = data.get('frequencies')
+      result = mean_group(lower_bound, class_width, frequencies)
     return jsonify({'status': 200, 'data': {'result': result}})
   except Exception as e:
     return jsonify({'status': 500, 'message': str(e)}), 500
@@ -399,10 +403,14 @@ def mean_op():
 def median_op():
   try:
     data = request.get_json()
-    numbers = data.get('numbers', [])
-    if not numbers:
-      return jsonify({'status': 400, 'message': 'No numbers provided'}), 400
-    result = median_ungroup(numbers)
+    if 'numbers' in data:  # Ungrouped data
+      numbers = data['numbers']
+      result = median_ungroup(numbers)
+    else:  # Grouped data
+      lower_bound = data.get('lower_bound')
+      class_width = data.get('class_width')
+      frequencies = data.get('frequencies')
+      result = median_group(lower_bound, class_width, frequencies)
     return jsonify({'status': 200, 'data': {'result': result}})
   except Exception as e:
     return jsonify({'status': 500, 'message': str(e)}), 500
@@ -411,10 +419,14 @@ def median_op():
 def mode_op():
   try:
     data = request.get_json()
-    numbers = data.get('numbers', [])
-    if not numbers:
-      return jsonify({'status': 400, 'message': 'No numbers provided'}), 400
-    result = mode_ungroup(numbers)
+    if 'numbers' in data:  # Ungrouped data
+      numbers = data['numbers']
+      result = mode_ungroup(numbers)
+    else:  # Grouped data
+      lower_bound = data.get('lower_bound')
+      class_width = data.get('class_width')
+      frequencies = data.get('frequencies')
+      result = mode_group(lower_bound, class_width, frequencies)
     return jsonify({'status': 200, 'data': {'result': result}})
   except Exception as e:
     return jsonify({'status': 500, 'message': str(e)}), 500

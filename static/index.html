@@ -353,15 +353,36 @@
         <details>
           <summary style="font-weight:bold;color:#ffd700;">Statistics</summary>
           <div style="margin-top:10px;">
-            <label for="statsInput">Enter numbers (comma-separated):</label>
-            <input id="statsInput" type="text" placeholder="e.g., 1,2,3,4,5" style="width:100%;margin-bottom:8px;">
-            <div style="display:flex;gap:10px;margin-bottom:16px;">
-              <button onclick="calculateStats('mean')" style="flex:1">Mean</button>
-              <button onclick="calculateStats('median')" style="flex:1">Median</button>
-              <button onclick="calculateStats('mode')" style="flex:1">Mode</button>
-              <button onclick="calculateStats('stdev')" style="flex:1">Std Dev</button>
+            <div style="margin-bottom:20px;">
+              <h3 style="color:#ffd700;margin-top:0;">Ungrouped Data</h3>
+              <label for="statsInput">Enter numbers (comma-separated):</label>
+              <input id="statsInput" type="text" placeholder="e.g., 1,2,3,4,5" style="width:100%;margin-bottom:8px;">
+              <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <button onclick="calculateStats('mean')" style="flex:1">Mean</button>
+                <button onclick="calculateStats('median')" style="flex:1">Median</button>
+                <button onclick="calculateStats('mode')" style="flex:1">Mode</button>
+                <button onclick="calculateStats('stdev')" style="flex:1">Std Dev</button>
+              </div>
+              <div id="statsResult" style="white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
             </div>
-            <div id="statsResult" style="white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
+            
+            <div>
+              <h3 style="color:#ffd700;margin-top:20px;">Grouped Data</h3>
+              <div style="margin-bottom:8px;">
+                <label for="lowerBound">Lower Bound:</label>
+                <input type="number" id="lowerBound" placeholder="e.g., 10" style="width:120px;">
+                <label for="classWidth" style="margin-left:10px;">Class Width:</label>
+                <input type="number" id="classWidth" placeholder="e.g., 5" style="width:120px;">
+              </div>
+              <label for="frequencies">Frequencies (comma-separated):</label>
+              <input id="frequencies" type="text" placeholder="e.g., 2,5,8,4,1" style="width:100%;margin-bottom:8px;">
+              <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <button onclick="calculateGroupedStats('mean')" style="flex:1">Mean</button>
+                <button onclick="calculateGroupedStats('median')" style="flex:1">Median</button>
+                <button onclick="calculateGroupedStats('mode')" style="flex:1">Mode</button>
+              </div>
+              <div id="groupedStatsResult" style="white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
+            </div>
           </div>
         </details>
       </div>
@@ -1415,6 +1436,46 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ numbers })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 200) {
+          resultDiv.innerText = `${type.charAt(0).toUpperCase() + type.slice(1)}: ${data.data.result}`;
+        } else {
+          resultDiv.innerText = data.message || "Error calculating result";
+        }
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error: " + (err.message || err);
+      });
+    }
+
+    // Grouped Statistics Calculator
+    function calculateGroupedStats(type) {
+      const lowerBound = parseFloat(document.getElementById("lowerBound").value);
+      const classWidth = parseFloat(document.getElementById("classWidth").value);
+      const frequencies = document.getElementById("frequencies").value.trim()
+        .split(',')
+        .map(n => parseInt(n.trim()))
+        .filter(n => !isNaN(n));
+      
+      const resultDiv = document.getElementById("groupedStatsResult");
+      
+      if (isNaN(lowerBound) || isNaN(classWidth) || frequencies.length === 0) {
+        resultDiv.innerText = "Please enter valid values for all fields";
+        return;
+      }
+
+      resultDiv.innerText = "Calculating...";
+      
+      fetch(`/math/stats/${type}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lower_bound: lowerBound,
+          class_width: classWidth,
+          frequencies: frequencies
+        })
       })
       .then(r => r.json())
       .then(data => {

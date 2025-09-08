@@ -38,9 +38,17 @@ def mode_group(l, h, f):
   return mode
 
 def standard_deviation(numbers):
-  if len(numbers) < 2:
-    return None
-  mean = mean_ungroup(numbers)
-  squared_diff_sum = sum((x - mean) ** 2 for x in numbers)
-  variance = squared_diff_sum / (len(numbers) - 1)
-  return (variance ** 0.5)
+    if len(numbers) < 2:
+        return None
+    mean = mean_ungroup(numbers)
+    squared_diff_sum = sum((x - mean) ** 2 for x in numbers)
+    variance = squared_diff_sum / (len(numbers) - 1)
+    return (variance ** 0.5)
+
+def standard_deviation_group(l, h, f):
+    if sum(f) < 2:
+        return None
+    mean = mean_group(l, h, f)
+    # Calculate variance for grouped data
+    variance = sum((((l + (i * h)) - mean) ** 2) * f[i] for i in range(len(f))) / (sum(f) - 1)
+    return (variance ** 0.5)
