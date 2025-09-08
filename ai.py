@@ -9,6 +9,7 @@ from libraries.math.threeD import cube, cuboid, cylinder, sphere
 from libraries.securities import decode_morse, encode_morse
 from libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
 from chat import chat, generate_image, classify_image # --- MODIFIED: Added classify_image ---
+from libraries.math.statistict import mean_ungroup, median_ungroup, mode_ungroup, standard_deviation
 import math
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
@@ -95,8 +96,6 @@ def coin_catcher():
 def dual_clock():
   subprocess.Popen([clock_path])
   return "Dual Clock Launched!"
-
-# ... (rest of the file is unchanged) ...
 
 # Route for basic NER
 @app.route('/ner/tagging', methods=['POST'])
@@ -382,6 +381,55 @@ def scientific_calc():
     return jsonify({'status': 200, 'result': result})
   except Exception as ex:
     return jsonify({'status': 400, 'message': f'Error: {str(ex)}'})
+
+# Statistics operations
+@app.route('/math/stats/mean', methods=['POST'])
+def mean_op():
+  try:
+    data = request.get_json()
+    numbers = data.get('numbers', [])
+    if not numbers:
+        return jsonify({'status': 400, 'message': 'No numbers provided'}), 400
+    result = mean_ungroup(numbers)
+    return jsonify({'status': 200, 'data': {'result': result}})
+  except Exception as e:
+    return jsonify({'status': 500, 'message': str(e)}), 500
+
+@app.route('/math/stats/median', methods=['POST'])
+def median_op():
+  try:
+    data = request.get_json()
+    numbers = data.get('numbers', [])
+    if not numbers:
+      return jsonify({'status': 400, 'message': 'No numbers provided'}), 400
+    result = median_ungroup(numbers)
+    return jsonify({'status': 200, 'data': {'result': result}})
+  except Exception as e:
+    return jsonify({'status': 500, 'message': str(e)}), 500
+
+@app.route('/math/stats/mode', methods=['POST'])
+def mode_op():
+  try:
+    data = request.get_json()
+    numbers = data.get('numbers', [])
+    if not numbers:
+      return jsonify({'status': 400, 'message': 'No numbers provided'}), 400
+    result = mode_ungroup(numbers)
+    return jsonify({'status': 200, 'data': {'result': result}})
+  except Exception as e:
+    return jsonify({'status': 500, 'message': str(e)}), 500
+
+@app.route('/math/stats/stdev', methods=['POST'])
+def stdev_op():
+  try:
+    data = request.get_json()
+    numbers = data.get('numbers', [])
+    if not numbers or len(numbers) < 2:
+      return jsonify({'status': 400, 'message': 'Need at least 2 numbers'}), 400
+    result = standard_deviation(numbers)
+    return jsonify({'status': 200, 'data': {'result': result}})
+  except Exception as e:
+    return jsonify({'status': 500, 'message': str(e)}), 500
 
 if __name__ == "__main__":
   app.run(debug=True, threaded=True)

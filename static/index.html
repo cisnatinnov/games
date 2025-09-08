@@ -350,6 +350,20 @@
             <span id="bmiResult"></span>
           </div>
         </details>
+        <details>
+          <summary style="font-weight:bold;color:#ffd700;">Statistics</summary>
+          <div style="margin-top:10px;">
+            <label for="statsInput">Enter numbers (comma-separated):</label>
+            <input id="statsInput" type="text" placeholder="e.g., 1,2,3,4,5" style="width:100%;margin-bottom:8px;">
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+              <button onclick="calculateStats('mean')" style="flex:1">Mean</button>
+              <button onclick="calculateStats('median')" style="flex:1">Median</button>
+              <button onclick="calculateStats('mode')" style="flex:1">Mode</button>
+              <button onclick="calculateStats('stdev')" style="flex:1">Std Dev</button>
+            </div>
+            <div id="statsResult" style="white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
+          </div>
+        </details>
       </div>
     </section>
     <section id="game-section-group" style="margin-bottom:30px; display:none;">
@@ -1374,6 +1388,44 @@
       })
       .catch(() => {
         resultDiv.innerText = "Calculation error.";
+      });
+    }
+
+    // Statistics Calculator
+    function calculateStats(type) {
+      const input = document.getElementById("statsInput").value.trim();
+      const resultDiv = document.getElementById("statsResult");
+      
+      if (!input) {
+        resultDiv.innerText = "Please enter some numbers";
+        return;
+      }
+
+      // Convert input string to array of numbers
+      const numbers = input.split(',').map(n => parseFloat(n.trim())).filter(n => !isNaN(n));
+      
+      if (numbers.length === 0) {
+        resultDiv.innerText = "Please enter valid numbers";
+        return;
+      }
+
+      resultDiv.innerText = "Calculating...";
+      
+      fetch(`/math/stats/${type}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ numbers })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 200) {
+          resultDiv.innerText = `${type.charAt(0).toUpperCase() + type.slice(1)}: ${data.data.result}`;
+        } else {
+          resultDiv.innerText = data.message || "Error calculating result";
+        }
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error: " + (err.message || err);
       });
     }
   </script>
