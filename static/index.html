@@ -574,6 +574,7 @@
   <audio id="typeSound" src="/assets/sounds/type-ui-38782.mp3"></audio>
 
   <script>
+    /// document.addEventListener('contextmenu', event => event.preventDefault());
     // --- MODIFIED: showSection function updated to include new sections ---
     function showSection(sectionId) {
       document.getElementById('ai-chat-section').style.display = 'none';
@@ -1274,66 +1275,202 @@
       const side = document.getElementById("cubeSide").value;
       fetch(`/math/3d/cube?side=${side}`)
       .then(r=>r.json()).then(data=>{
-        document.getElementById("cubeResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        const resultDiv = document.getElementById("cubeResult");
+        let result = data.data ?? data.result ?? data;
+        // If result is an object, format it nicely
+        if (typeof result === "object" && result !== null) {
+          let out = "";
+          if (result.volume !== undefined) {
+            out += `Volume: ${result.volume}<br>`;
+          }
+          if (result.curved_surface_area !== undefined) {
+            out += `Curved Surface Area: ${result.curved_surface_area}<br>`;
+          }
+          if (result.surface_area) {
+            out += `Surface Area: ${result.surface_area}<br>`;
+          }
+          resultDiv.innerHTML = out || JSON.stringify(result);
+        } else {
+          resultDiv.innerText = result;
+        }
       });
     }
     function mathSphere() {
       const radius = document.getElementById("sphereRadius").value;
       fetch(`/math/3d/sphere?radius=${radius}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("sphereResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        const resultDiv = document.getElementById("sphereResult");
+        let result = data.data ?? data.result ?? data;
+        // If result is an object, format it nicely
+        if (typeof result === "object" && result !== null) {
+          let out = "";
+          if (result.volume !== undefined) {
+            out += `Volume: ${result.volume}<br>`;
+          }
+          if (result.curved_surface_area !== undefined) {
+            out += `Curved Surface Area: ${result.curved_surface_area}<br>`;
+          }
+          if (result.surface_area) {
+            out += `Surface Area: ${result.surface_area}<br>`;
+          }
+          resultDiv.innerHTML = out || JSON.stringify(result);
+        } else {
+          resultDiv.innerText = result;
+        }
+      });
     }
     function mathCylinder() {
       const radius = document.getElementById("cylRadius").value;
       const height = document.getElementById("cylHeight").value;
       fetch(`/math/3d/cylinder?radius=${radius}&height=${height}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("cylResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        const resultDiv = document.getElementById("cylResult");
+        let result = data.data ?? data.result ?? data;
+        // If result is an object, format it nicely
+        if (typeof result === "object" && result !== null) {
+          let out = "";
+          if (result.volume !== undefined) {
+            out += `Volume: ${result.volume}<br>`;
+          }
+          if (result.curved_surface_area !== undefined) {
+            out += `Curved Surface Area: ${result.curved_surface_area}<br>`;
+          }
+          if (result.surface_area) {
+            out += `Surface Area: ${result.surface_area}<br>`;
+          }
+          resultDiv.innerHTML = out || JSON.stringify(result);
+        } else {
+          resultDiv.innerText = result;
+        }
+      });
     }
     function mathCuboid() {
       const side = document.getElementById("cuboidSide").value;
       const length = document.getElementById("cuboidLength").value;
       const height = document.getElementById("cuboidHeight").value;
       fetch(`/math/3d/cuboid?side=${side}&length=${length}&height=${height}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("cuboidResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        const resultDiv = document.getElementById("cuboidResult");
+        let result = data.data ?? data.result ?? data;
+        // If result is an object, format it nicely
+        if (typeof result === "object" && result !== null) {
+          let out = "";
+          if (result.volume !== undefined) {
+            out += `Volume: ${result.volume}<br>`;
+          }
+          if (result.curved_surface_area !== undefined) {
+            out += `Curved Surface Area: ${result.curved_surface_area}<br>`;
+          }
+          if (result.surface_area) {
+            out += `Surface Area: ${result.surface_area}<br>`;
+          }
+          resultDiv.innerHTML = out || JSON.stringify(result);
+        } else {
+          resultDiv.innerText = result;
+        }
+      });
     }
     function mathTriangularPrism() {
       const base = document.getElementById("triPrismBase").value;
       const length = document.getElementById("triPrismLength").value;
       const height = document.getElementById("triPrismLength").value;
       fetch(`/math/3d/triangular_prism?base=${base}&length=${length}&height=${height}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("triPrismResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        const resultDiv = document.getElementById("triPrismResult");
+        let result = data.data ?? data.result ?? data;
+        // If result is an object, format it nicely
+        if (typeof result === "object" && result !== null) {
+          let out = "";
+          if (result.volume !== undefined) {
+            out += `Volume: ${result.volume}<br>`;
+          }
+          if (result.lateral_surface_area !== undefined) {
+            out += `Lateral Surface Area: ${result.lateral_surface_area}<br>`;
+          }
+          if (result.total_surface_area) {
+            out += `Total Surface Area: ${result.total_surface_area}<br>`;
+          }
+          resultDiv.innerHTML = out || JSON.stringify(result);
+        } else {
+          resultDiv.innerText = result;
+        }
+      });
     }
     function mathRectangularPrism() {
       const width = document.getElementById("rectPrismWidth").value;
       const length = document.getElementById("rectPrismLength").value;
       const height = document.getElementById("rectPrismHeight").value;
       fetch(`/math/3d/rectangular_prism?width=${width}&length=${length}&height=${height}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("rectPrismResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        const resultDiv = document.getElementById("triPrismResult");
+        let result = data.data ?? data.result ?? data;
+        // If result is an object, format it nicely
+        if (typeof result === "object" && result !== null) {
+          let out = "";
+          if (result.volume !== undefined) {
+            out += `Volume: ${result.volume}<br>`;
+          }
+          if (result.lateral_surface_area !== undefined) {
+            out += `Lateral Surface Area: ${result.lateral_surface_area}<br>`;
+          }
+          if (result.total_surface_area) {
+            out += `Total Surface Area: ${result.total_surface_area}<br>`;
+          }
+          resultDiv.innerHTML = out || JSON.stringify(result);
+        } else {
+          resultDiv.innerText = result;
+        }
+      });
     }
     function mathPentagonalPrism() {
       const side = document.getElementById("pentaPrismSide").value;
       const height = document.getElementById("pentaPrismHeight").value;
       fetch(`/math/3d/pentagonal_prism?side=${side}&height=${height}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("pentaPrismResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        const resultDiv = document.getElementById("triPrismResult");
+        let result = data.data ?? data.result ?? data;
+        // If result is an object, format it nicely
+        if (typeof result === "object" && result !== null) {
+          let out = "";
+          if (result.volume !== undefined) {
+            out += `Volume: ${result.volume}<br>`;
+          }
+          if (result.lateral_surface_area !== undefined) {
+            out += `Lateral Surface Area: ${result.lateral_surface_area}<br>`;
+          }
+          if (result.total_surface_area) {
+            out += `Total Surface Area: ${result.total_surface_area}<br>`;
+          }
+          resultDiv.innerHTML = out || JSON.stringify(result);
+        } else {
+          resultDiv.innerText = result;
+        }
+      });
     }
     function mathHexagonalPrism() {
       const side = document.getElementById("hexaPrismSide").value;
       const height = document.getElementById("hexaPrismHeight").value;
       fetch(`/math/3d/hexagonal_prism?side=${side}&height=${height}`)
-        .then(r=>r.json()).then(data=>{
-          document.getElementById("hexaPrismResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
-        });
+      .then(r=>r.json()).then(data=>{
+        const resultDiv = document.getElementById("triPrismResult");
+        let result = data.data ?? data.result ?? data;
+        // If result is an object, format it nicely
+        if (typeof result === "object" && result !== null) {
+          let out = "";
+          if (result.volume !== undefined) {
+            out += `Volume: ${result.volume}<br>`;
+          }
+          if (result.lateral_surface_area !== undefined) {
+            out += `Lateral Surface Area: ${result.lateral_surface_area}<br>`;
+          }
+          if (result.total_surface_area) {
+            out += `Total Surface Area: ${result.total_surface_area}<br>`;
+          }
+          resultDiv.innerHTML = out || JSON.stringify(result);
+        } else {
+          resultDiv.innerText = result;
+        }
+      });
     }
 
     // BMI
