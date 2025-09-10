@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Game Launcher</title>
+  <title>AI & Game Launcher</title>
   <style>
     body {
       margin: 0;
@@ -248,15 +248,19 @@
       <button onclick="showSection('game-section-group')">Games</button>
       <button onclick="showSection('ner-section-group')">NER</button>
       <button onclick="showSection('image-section-group')">Image Generator</button>
+      <button onclick="showSection('aksara-sunda-section')">Aksara Sunda</button>
       <button onclick="showSection('image-classifier-section')">Image Classifier</button>
     </nav>
 
     <section id="ai-chat-section" style="margin-bottom:30px;">
-      <div id="chat">
-        <label for="text" style="font-weight:bold;color:#ffd700;">AI Chat:</label><br>
-        <input id="text" placeholder="Type your message..." />
-        <button onclick="send()">Send</button>
-        <p id="reply">AI reply will appear here...</p>
+      <div id="chat-container" style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;display:flex;flex-direction:column;height:450px;">
+        <div id="chat-log" style="flex-grow:1;overflow-y:auto;margin-bottom:15px;padding-right:10px;display:flex;flex-direction:column;gap:10px;">
+          <div class="chat-message ai-message" style="background:rgba(255,255,255,0.2);color:#fff;align-self:flex-start;padding:10px 15px;border-radius:18px;max-width:80%;line-height:1.4;word-wrap:break-word;">Halo! What Can I do for you?</div>
+        </div>
+        <div id="chat-input-container" style="display:flex;gap:10px;">
+          <input id="chat-input" placeholder="Type your message..." onkeydown="handleChatInput(event)" style="flex-grow:1;margin-bottom:0;">
+          <button onclick="sendChatMessage()">Send</button>
+        </div>
       </div>
     </section>
     <section id="math-section-group" style="margin-bottom:30px; display:none;">
@@ -567,7 +571,16 @@
         <div id="classifierResult" style="margin-top:16px; text-align: left;"></div>
       </div>
     </section>
-    </main>
+
+    <section id="aksara-sunda-section" style="margin-bottom:30px; display:none;">
+      <div id="aksara-sunda-container" style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;text-align:left;">
+        <p style="font-size:1.1rem;font-weight:bold;color:#ffd700;text-shadow:1px 1px 2px #222;">Aksara Sunda</p>
+        <input type="text" id="latinInput" name="latin" style="width:100%; margin-bottom:10px; background: #fff; color: #333; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+        <button onclick="aksaraSunda()" style="width:100%; margin-top:1rem; font-size:1.1rem; border-radius:8px; padding:12px 0; background:linear-gradient(45deg,#1e3c72,#2a5298);color:white;font-weight:bold;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(30,60,114,0.12);transition:background 0.3s;">Translate</button>
+        <div id="translateResult" style="margin-top:16px; text-align: left;"></div>
+      </div>
+    </section>
+  </main>
 
   <audio id="winSound" src="/assets/sounds/victory-chime-366449.mp3"></audio>
   <audio id="loseSound" src="/assets/sounds/losing-horn-313723.mp3"></audio>
@@ -582,6 +595,7 @@
       document.getElementById('game-section-group').style.display = 'none';
       document.getElementById('ner-section-group').style.display = 'none';
       document.getElementById('image-section-group').style.display = 'none';
+      document.getElementById('aksara-sunda-section').style.display = 'none';
       document.getElementById('image-classifier-section').style.display = 'none'; // Added
       document.getElementById(sectionId).style.display = 'block';
     }
@@ -1144,6 +1158,31 @@
         resultDiv.innerText = "Error: " + (err.message || err);
       });
     }
+
+    // Aksara Sunda
+    function aksaraSunda() {
+      const text = document.getElementById("latinInput").value.trim();
+      const resultDiv = document.getElementById("translateResult");
+      resultDiv.innerText = "Translate...";
+      fetch('/aksara_sunda', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      })
+      .then(r => r.json())
+      .then(data => {
+        let result = data.data ?? data.result ?? data.message ?? data;
+        if (typeof result === "object" && result !== null) {
+          if (result.result) result = result.result;
+          else result = JSON.stringify(result, null, 2);
+        }
+        resultDiv.innerText = result;
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error: " + (err.message || err);
+      });
+    }
+
     // Quadratic Equation
     function mathQuadratic() {
       const a = document.getElementById("quadA").value;
@@ -1417,7 +1456,7 @@
       const side = document.getElementById("pentaPrismSide").value;
       const height = document.getElementById("pentaPrismHeight").value;
       fetch(`/math/3d/pentagonal_prism?side=${side}&height=${height}`)
-      .then(r=>r.json()).then(data=>{
+      .then(r => r.json()).then(data=>{
         const resultDiv = document.getElementById("triPrismResult");
         let result = data.data ?? data.result ?? data;
         // If result is an object, format it nicely
@@ -1428,9 +1467,6 @@
           }
           if (result.lateral_surface_area !== undefined) {
             out += `Lateral Surface Area: ${result.lateral_surface_area}<br>`;
-          }
-          if (result.total_surface_area) {
-            out += `Total Surface Area: ${result.total_surface_area}<br>`;
           }
           resultDiv.innerHTML = out || JSON.stringify(result);
         } else {
@@ -1665,6 +1701,59 @@
       .catch(err => {
         resultDiv.innerText = "Error: " + (err.message || err);
       });
+    }
+
+    function sendChatMessage() {
+      const inputField = document.getElementById("chat-input");
+      const text = inputField.value.trim();
+      if (!text) return;
+      const chatLog = document.getElementById("chat-log");
+      // Add user message
+      const userMessageDiv = document.createElement("div");
+      userMessageDiv.className = "chat-message user-message";
+      userMessageDiv.style = "background:linear-gradient(45deg,#ff7e5f,#feb47b);color:white;align-self:flex-end;padding:10px 15px;border-radius:18px;max-width:80%;line-height:1.4;word-wrap:break-word;";
+      userMessageDiv.innerText = text;
+      chatLog.appendChild(userMessageDiv);
+      inputField.value = "";
+      // Add typing indicator
+      const typingIndicator = document.createElement("div");
+      typingIndicator.className = "chat-message ai-message typing-indicator";
+      typingIndicator.style = "color:#ffd700;font-style:italic;align-self:flex-start;";
+      typingIndicator.innerText = "Typing...";
+      chatLog.appendChild(typingIndicator);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        chatLog.removeChild(typingIndicator);
+        const aiMessageDiv = document.createElement("div");
+        aiMessageDiv.className = "chat-message ai-message";
+        aiMessageDiv.style = "background:rgba(255,255,255,0.2);color:#fff;align-self:flex-start;padding:10px 15px;border-radius:18px;max-width:80%;line-height:1.4;word-wrap:break-word;";
+        aiMessageDiv.innerText = data.reply;
+        chatLog.appendChild(aiMessageDiv);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      })
+      .catch(error => {
+        chatLog.removeChild(typingIndicator);
+        const errorMessageDiv = document.createElement("div");
+        errorMessageDiv.className = "chat-message ai-message";
+        errorMessageDiv.style = "background:#B22222;color:white;align-self:flex-start;padding:10px 15px;border-radius:18px;max-width:80%;line-height:1.4;word-wrap:break-word;";
+        errorMessageDiv.innerText = `Error: ${error.message}`;
+        chatLog.appendChild(errorMessageDiv);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      });
+    }
+    function handleChatInput(event) {
+      if (event.key === "Enter") {
+        sendChatMessage();
+      }
     }
   </script>
 </body>

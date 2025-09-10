@@ -1,46 +1,68 @@
-# A dictionary mapping Latin characters to Aksara Sunda Unicode characters.
-# This is a simplified mapping for demonstration.
-aksara_map = {
-  'a': 'ᮃ', 'i': 'ᮄ', 'u': 'ᮅ', 'e': ' 0', 'o': 'ᮇ',
-  'ka': 'ᮊ', 'ga': 'ᮌ', 'cha': 'ᮎ', 'ja': 'ᮏ',
-  'pa': 'ᮕ', 'ba': 'ᮘ', 'ma': 'ᮙ',
-  'ta': 'ᮒ', 'da': 'ᮓ', 'na': 'ᮔ',
-  'sa': 'ᮞ', 'wa': 'ᮯ', 'la': 'ᮜ',
-  'ya': 'ᮚ', 'ra': 'ᮛ',
-  # Panyang: r-final
-  'r': 'ᮁ',
-  # Panéléng: é
-  'é': 'ᮦ',
-  # Pamepet: e
-  'e': 'ᮧ',
-  # Panolong: o
-  'o': 'ᮩ',
-  # Panyakra: ra
-  'ra': 'ᮢ',
-  # Panyiku: ya
-  'ya': '᮳',
-  # Pamaeh: silent vowel
-  'ᮊ': 'ᮊ᮪' # Example: to handle final consonants, like 'k'
+# Konsonan dasar (vokal 'a' otomatis melekat)
+consonants = {
+  "k": "ᮊ", "g": "ᮌ", "ng": "ᮍ", 
+  "c": "ᮎ", "j": "ᮏ", "ny": "ᮑ",
+  "t": "ᮒ", "d": "ᮓ", "n": "ᮔ", 
+  "p": "ᮕ", "b": "ᮘ", "m": "ᮙ", 
+  "y": "ᮚ", "r": "ᮛ", "l": "ᮜ", 
+  "w": "ᮝ", "s": "ᮞ", "h": "ᮠ"
 }
 
+# Vokal mandiri (awal kata / tanpa konsonan)
+independent_vowels = {
+  "a": "ᮃ", "i": "ᮄ", "u": "ᮅ",
+  "é": "ᮆ", "e": "ᮇ", "o": "ᮈ"
+}
+
+# Sandhangan vokal (melekat pada konsonan)
+vowel_signs = {
+  "i": "ᮤ", "u": "ᮥ", "é": "ᮦ",
+  "o": "ᮧ", "e": "ᮨ"
+}
+
+# Pamaéh
+virama = "᮪"
+
 def to_aksara_sunda(text):
-  result = ''
-  i = 0
-  while i < len(text):
-    # Check for two-character mappings first (like 'ka', 'ga', etc.)
-    if i + 1 < len(text) and text[i:i+2] in aksara_map:
-      result += aksara_map[text[i:i+2]]
-      i += 2
-    elif text[i] in aksara_map:
-      result += aksara_map[text[i]]
-      i += 1
-    else:
-      result += text[i]  # If no mapping, keep the original character
-      i += 1
+  result = ""
+  words = text.lower().split()
+  for word in words:
+    i = 0
+    while i < len(word):
+      # cek konsonan rangkap dulu
+      if word[i:i+2] in consonants:
+        cons = consonants[word[i:i+2]]
+        i += 2
+      elif word[i] in consonants:
+        cons = consonants[word[i]]
+        i += 1
+      elif word[i] in independent_vowels:
+        result += independent_vowels[word[i]]
+        i += 1
+        continue
+      else:
+        result += word[i]
+        i += 1
+        continue
+
+      # default vokal "a"
+      vowel_added = False
+      if i < len(word) and word[i] in vowel_signs:
+        cons += vowel_signs[word[i]]
+        i += 1
+        vowel_added = True
+
+      result += cons
+
+    # kalau setelah konsonan tidak ada vokal → tambahkan pamaéh
+    if not vowel_added and (i < len(word) and word[i] not in independent_vowels and word[i] not in consonants):
+      result += virama
+
+    result += " "
   return {
-    'status': 200,
-    'message': '',
-    'data': {
-      'result': result
+    "status": 200,
+    "message": "",
+    "data": {
+      "result": result.strip()
     }
   }

@@ -9,6 +9,8 @@ from libraries.math.threeD import cube, cuboid, cylinder, sphere, triangular_pri
 from libraries.securities import decode_morse, encode_morse
 from libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
 from chat import chat, generate_image, classify_image # --- MODIFIED: Added classify_image ---
+# --- ADDED: Import for to_aksara_sunda ---
+from libraries.aksara_sunda import to_aksara_sunda
 from libraries.math.statisticts import mean_ungroup, mean_group, median_ungroup, median_group, mode_ungroup, mode_group, standard_deviation
 import math
 
@@ -71,8 +73,8 @@ def classify_image_op():
     image_url = f'/uploads/{filename}'
 
     return jsonify({
-        "description": description,
-        "image_url": image_url
+      "description": description,
+      "image_url": image_url
     })
   
   return jsonify({"error": "File processing failed"}), 500
@@ -124,6 +126,13 @@ def ner_generator():
   data = request.get_json()
   text = data.get('text')
   resp = text_generator(text)
+  return jsonify(resp), resp['status']
+
+@app.route('/aksara_sunda', methods=['POST'])
+def aksara_sunda():
+  data = request.get_json()
+  text = data.get('text')
+  resp = to_aksara_sunda(text)
   return jsonify(resp), resp['status']
 
 # Simple math operations

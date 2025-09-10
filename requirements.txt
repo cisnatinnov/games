@@ -1,0 +1,12 @@
+os
+subprocess
+flask
+werkzeug
+math
+spacy
+transformers
+nltk
+pygame
+random
+sys
+time
