@@ -57,3 +57,41 @@ def cuboid(side, length, height):
       'surface_area': round(surface_area, 2)
     }
   }
+
+def prism(base_area, height, perimeter):
+  volume = base_area * height
+  lateral_surface_area = perimeter * height
+  total_surface_area = 2 * base_area + lateral_surface_area
+  return {
+    'status': 200,
+    'message': '',
+    'data': {
+      'volume': round(volume, 2),
+      'lateral_surface_area': round(lateral_surface_area, 2),
+      'total_surface_area': round(total_surface_area, 2)
+    }
+  }
+
+def triangular_prism(base, height, length):
+  base_area = 0.5 * base * height
+  perimeter = base + height + math.sqrt(base**2 + height**2)
+  return prism(base_area, length, perimeter)
+
+def rectangular_prism(width, height, length):
+  base_area = width * height
+  perimeter = 2 * (width + height)
+  return prism(base_area, length, perimeter)
+
+def pentagonal_prism(side_length, height):
+  # Regular pentagon
+  apothem = side_length / (2 * math.tan(math.pi/5))
+  base_area = 5 * side_length * apothem / 2
+  perimeter = 5 * side_length
+  return prism(base_area, height, perimeter)
+
+def hexagonal_prism(side_length, height):
+  # Regular hexagon
+  apothem = side_length * math.sqrt(3) / 2
+  base_area = 6 * side_length * apothem / 2
+  perimeter = 6 * side_length
+  return prism(base_area, height, perimeter)

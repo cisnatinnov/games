@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename # --- ADDED ---
 from libraries.math.complex import factorial, log, power, quadratic, sqrt
 from libraries.math.simple import add, divide, multiply, subtract
 from libraries.math.twoD import circle, rectangle, square, triangle
-from libraries.math.threeD import cube, cuboid, cylinder, sphere
+from libraries.math.threeD import cube, cuboid, cylinder, sphere, triangular_prism, rectangular_prism, pentagonal_prism, hexagonal_prism
 from libraries.securities import decode_morse, encode_morse
 from libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
 from chat import chat, generate_image, classify_image # --- MODIFIED: Added classify_image ---
@@ -79,7 +79,7 @@ def classify_image_op():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+  return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 # --- END ADDED ---
 
 @app.route("/aim_trainer")
@@ -312,6 +312,36 @@ def cuboid_op():
   length = float(length_str)
   height = float(height_str)
   resp = cuboid(side, length, height)
+  return jsonify(resp), resp['status']
+
+@app.route('/math/3d/triangular_prism', methods=['GET'])
+def triangular_prism_op():
+  base = float(request.args.get('base', 0))
+  height = float(request.args.get('height', 0))
+  length = float(request.args.get('length', 0))
+  resp = triangular_prism(base, height, length)
+  return jsonify(resp), resp['status']
+
+@app.route('/math/3d/rectangular_prism', methods=['GET'])
+def rectangular_prism_op():
+  width = float(request.args.get('width', 0))
+  height = float(request.args.get('height', 0))
+  length = float(request.args.get('length', 0))
+  resp = rectangular_prism(width, height, length)
+  return jsonify(resp), resp['status']
+
+@app.route('/math/3d/pentagonal_prism', methods=['GET'])
+def pentagonal_prism_op():
+  side = float(request.args.get('side', 0))
+  height = float(request.args.get('height', 0))
+  resp = pentagonal_prism(side, height)
+  return jsonify(resp), resp['status']
+
+@app.route('/math/3d/hexagonal_prism', methods=['GET'])
+def hexagonal_prism_op():
+  side = float(request.args.get('side', 0))
+  height = float(request.args.get('height', 0))
+  resp = hexagonal_prism(side, height)
   return jsonify(resp), resp['status']
 
 @app.route('/bmi', methods=['POST'])

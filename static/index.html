@@ -324,6 +324,32 @@
             <input id="cuboidHeight" type="number" placeholder="height" style="width:50px;">
             <button onclick="mathCuboid()">Cuboid</button>
             <span id="cuboidResult"></span>
+            <br>
+            <label>Triangular Prism:</label>
+            <input id="triPrismBase" type="number" placeholder="base" style="width:50px;">
+            <input id="triPrismHeight" type="number" placeholder="height" style="width:50px;">
+            <input id="triPrismLength" type="number" placeholder="length" style="width:50px;">
+            <button onclick="mathTriangularPrism()">Triangular Prism</button>
+            <span id="triPrismResult"></span>
+            <br>
+            <label>Rectangular Prism:</label>
+            <input id="rectPrismWidth" type="number" placeholder="width" style="width:50px;">
+            <input id="rectPrismHeight" type="number" placeholder="height" style="width:50px;">
+            <input id="rectPrismLength" type="number" placeholder="length" style="width:50px;">
+            <button onclick="mathRectangularPrism()">Rectangular Prism</button>
+            <span id="rectPrismResult"></span>
+            <br>
+            <label>Pentagonal Prism:</label>
+            <input id="pentaPrismSide" type="number" placeholder="side" style="width:70px;">
+            <input id="pentaPrismHeight" type="number" placeholder="height" style="width:70px;">
+            <button onclick="mathPentagonalPrism()">Pentagonal Prism</button>
+            <span id="pentaPrismResult"></span>
+            <br>
+            <label>Hexagonal Prism:</label>
+            <input id="hexaPrismSide" type="number" placeholder="side" style="width:70px;">
+            <input id="hexaPrismHeight" type="number" placeholder="height" style="width:70px;">
+            <button onclick="mathHexagonalPrism()">Hexagonal Prism</button>
+            <span id="hexaPrismResult"></span>
           </div>
         </details>
         <details>
@@ -1275,6 +1301,40 @@
           document.getElementById("cuboidResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
         });
     }
+    function mathTriangularPrism() {
+      const base = document.getElementById("triPrismBase").value;
+      const length = document.getElementById("triPrismLength").value;
+      const height = document.getElementById("triPrismLength").value;
+      fetch(`/math/3d/triangular_prism?base=${base}&length=${length}&height=${height}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("triPrismResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathRectangularPrism() {
+      const width = document.getElementById("rectPrismWidth").value;
+      const length = document.getElementById("rectPrismLength").value;
+      const height = document.getElementById("rectPrismHeight").value;
+      fetch(`/math/3d/rectangular_prism?width=${width}&length=${length}&height=${height}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("rectPrismResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathPentagonalPrism() {
+      const side = document.getElementById("pentaPrismSide").value;
+      const height = document.getElementById("pentaPrismHeight").value;
+      fetch(`/math/3d/pentagonal_prism?side=${side}&height=${height}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("pentaPrismResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
+    function mathHexagonalPrism() {
+      const side = document.getElementById("hexaPrismSide").value;
+      const height = document.getElementById("hexaPrismHeight").value;
+      fetch(`/math/3d/hexagonal_prism?side=${side}&height=${height}`)
+        .then(r=>r.json()).then(data=>{
+          document.getElementById("hexaPrismResult").innerText = data.data ?? data.result ?? JSON.stringify(data);
+        });
+    }
 
     // BMI
     function mathBMI() {
@@ -1293,17 +1353,6 @@
         }
       });
     }
-
-    // --- MODIFIED: showSection is defined twice, this one is better placed ---
-    // Menu navigation logic
-    // function showSection(sectionId) {
-    //   document.getElementById('ai-chat-section').style.display = 'none';
-    //   document.getElementById('math-section-group').style.display = 'none';
-    //   document.getElementById('game-section-group').style.display = 'none';
-    //   document.getElementById('ner-section-group').style.display = 'none';
-    //   document.getElementById('image-section-group').style.display = 'none';
-    //   document.getElementById(sectionId).style.display = 'block';
-    // }
 
     // Show AI Chat by default on load
     window.onload = function() {
