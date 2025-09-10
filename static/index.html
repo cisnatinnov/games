@@ -243,6 +243,13 @@
     </header>
 
     <nav style="margin-bottom:30px;">
+      <a href="/static/quran.html"
+        target="_blank"
+        rel="noopener"
+        style="display:inline-block;padding:10px 14px;background:#0ea5e9;color:#fff;border-radius:10px;text-decoration:none;font-weight:700"
+      >
+        Quran
+      </a>
       <button onclick="showSection('ai-chat-section')">AI Chat</button>
       <button onclick="showSection('math-section-group')">Math</button>
       <button onclick="showSection('game-section-group')">Games</button>
@@ -1468,6 +1475,9 @@
           if (result.lateral_surface_area !== undefined) {
             out += `Lateral Surface Area: ${result.lateral_surface_area}<br>`;
           }
+          if (result.total_surface_area) {
+            out += `Total Surface Area: ${result.total_surface_area}<br>`;
+          }
           resultDiv.innerHTML = out || JSON.stringify(result);
         } else {
           resultDiv.innerText = result;
@@ -1561,46 +1571,46 @@
 
     // --- ADDED: New function for Image Classifier ---
     function classifyImage(event) {
-        event.preventDefault(); // Prevent default form submission
-        
-        const form = event.target;
-        const formData = new FormData(form);
-        const resultDiv = document.getElementById("classifierResult");
-        
-        resultDiv.innerHTML = "Analyzing image...";
+      event.preventDefault(); // Prevent default form submission
+      
+      const form = event.target;
+      const formData = new FormData(form);
+      const resultDiv = document.getElementById("classifierResult");
+      
+      resultDiv.innerHTML = "Analyzing image...";
 
-        fetch('/classify_image', {
-            method: 'POST',
-            body: formData // Browser automatically sets Content-Type to multipart/form-data
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-              throw new Error(data.error);
-            }
-            // Build the result HTML with a two-column layout
-            let resultHTML = `
-              <div style="display:flex; flex-wrap:wrap; gap: 20px; margin-top: 1rem;">
-                <div style="flex: 1; min-width: 200px;">
-                  <h3 style="color:#ffd700; margin-top:0;">Uploaded Image:</h3>
-                  <img src="${data.image_url}" alt="Uploaded for analysis" style="max-width:100%; border-radius:12px; box-shadow:0 2px 8px #222;">
-                </div>
-                <div style="flex: 2; min-width: 250px;">
-                  <h3 style="color:#ffd700; margin-top:0;">Gemini's Analysis:</h3>
-                  <p style="white-space: pre-wrap; margin-top: 0;">${data.description}</p>
-                </div>
-              </div>
-            `;
-            resultDiv.innerHTML = resultHTML;
-        })
-        .catch(err => {
-            resultDiv.innerText = "Error analyzing image.\n" + (err.message || err);
-        });
+      fetch('/classify_image', {
+        method: 'POST',
+        body: formData // Browser automatically sets Content-Type to multipart/form-data
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        // Build the result HTML with a two-column layout
+        let resultHTML = `
+          <div style="display:flex; flex-wrap:wrap; gap: 20px; margin-top: 1rem;">
+            <div style="flex: 1; min-width: 200px;">
+              <h3 style="color:#ffd700; margin-top:0;">Uploaded Image:</h3>
+              <img src="${data.image_url}" alt="Uploaded for analysis" style="max-width:100%; border-radius:12px; box-shadow:0 2px 8px #222;">
+            </div>
+            <div style="flex: 2; min-width: 250px;">
+              <h3 style="color:#ffd700; margin-top:0;">Gemini's Analysis:</h3>
+              <p style="white-space: pre-wrap; margin-top: 0;">${data.description}</p>
+            </div>
+          </div>
+        `;
+        resultDiv.innerHTML = resultHTML;
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error analyzing image.\n" + (err.message || err);
+      });
     }
     // --- END ADDED ---
 

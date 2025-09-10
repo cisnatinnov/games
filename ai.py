@@ -1,5 +1,6 @@
 import os
 import subprocess
+import requests
 from flask import Flask, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename # --- ADDED ---
 from libraries.math.complex import factorial, log, power, quadratic, sqrt
@@ -481,6 +482,21 @@ def stdev_op():
     return jsonify({'status': 200, 'data': {'result': result}})
   except Exception as e:
     return jsonify({'status': 500, 'message': str(e)}), 500
+
+# --- ADDED: New routes for Quran API integration ---
+API_BASE_URL = "https://api.alquran.cloud/v1"
+
+@app.route("/api/surahs")
+def get_surahs():
+  # Fetches and returns a list of all surahs from the API.
+  response = requests.get(f"{API_BASE_URL}/surah")
+  return jsonify(response.json())
+
+@app.route("/api/surah/<int:surah_number>")
+def get_surah_details(surah_number):
+  # Fetches and returns the details of a specific surah.
+  response = requests.get(f"{API_BASE_URL}/surah/{surah_number}")
+  return jsonify(response.json())
 
 if __name__ == "__main__":
   app.run(debug=True, threaded=True)
