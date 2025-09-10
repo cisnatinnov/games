@@ -10,8 +10,10 @@ from libraries.math.threeD import cube, cuboid, cylinder, sphere, triangular_pri
 from libraries.securities import decode_morse, encode_morse
 from libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
 from chat import chat, generate_image, classify_image # --- MODIFIED: Added classify_image ---
-# --- ADDED: Import for to_aksara_sunda ---
+
 from libraries.aksara_sunda import to_aksara_sunda
+from libraries.aksara_jawa import to_aksara_jawa
+
 from libraries.math.statisticts import mean_ungroup, mean_group, median_ungroup, median_group, mode_ungroup, mode_group, standard_deviation
 import math
 
@@ -134,6 +136,13 @@ def aksara_sunda():
   data = request.get_json()
   text = data.get('text')
   resp = to_aksara_sunda(text)
+  return jsonify(resp), resp['status']
+
+@app.route('/aksara_jawa', methods=['POST'])
+def aksara_jawa():
+  data = request.get_json()
+  text = data.get('text')
+  resp = to_aksara_jawa(text)
   return jsonify(resp), resp['status']
 
 # Simple math operations
