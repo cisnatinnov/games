@@ -13,6 +13,7 @@ from chat import chat, generate_image, classify_image # --- MODIFIED: Added clas
 
 from libraries.aksara_sunda import to_aksara_sunda
 from libraries.aksara_jawa import to_aksara_jawa
+from libraries.aksara_bali import to_aksara_bali
 
 from libraries.math.statisticts import mean_ungroup, mean_group, median_ungroup, median_group, mode_ungroup, mode_group, standard_deviation
 import math
@@ -143,6 +144,13 @@ def aksara_jawa():
   data = request.get_json()
   text = data.get('text')
   resp = to_aksara_jawa(text)
+  return jsonify(resp), resp['status']
+
+@app.route('/aksara_bali', methods=['POST'])
+def aksara_bali():
+  data = request.get_json()
+  text = data.get('text')
+  resp = to_aksara_bali(text)
   return jsonify(resp), resp['status']
 
 # Simple math operations
