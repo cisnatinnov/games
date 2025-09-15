@@ -259,6 +259,8 @@
       <button onclick="showSection('aksara-jawa-section')">Aksara Jawa</button>
       <button onclick="showSection('aksara-bali-section')">Aksara Bali</button>
       <button onclick="showSection('image-classifier-section')">Image Classifier</button>
+      <button onclick="showSection('tts-section')">Text to Speech</button>
+      <button onclick="showSection('stt-section')">Speech to Text</button>
     </nav>
 
     <section id="ai-chat-section" style="margin-bottom:30px;">
@@ -585,7 +587,11 @@
       <div id="aksara-sunda-container" style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;text-align:left;">
         <p style="font-size:1.1rem;font-weight:bold;color:#ffd700;text-shadow:1px 1px 2px #222;">Aksara Sunda</p>
         <input type="text" id="latinInput" name="latin" style="width:100%; margin-bottom:10px; background: #fff; color: #333; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-        <button onclick="aksaraSunda()" style="width:100%; margin-top:1rem; font-size:1.1rem; border-radius:8px; padding:12px 0; background:linear-gradient(45deg,#1e3c72,#2a5298);color:white;font-weight:bold;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(30,60,114,0.12);transition:background 0.3s;">Translate</button>
+        <div style="display:flex;gap:10px;margin-bottom:10px;">
+          <button onclick="aksaraSunda()" style="flex:1">Translate</button>
+          <button onclick="speakAksaraSunda()" style="flex:1">Speak</button>
+          <button onclick="sttAksaraSunda()" style="flex:1">Speech to Latin</button>
+        </div>
         <div id="translateResult" style="margin-top:16px; text-align: left;"></div>
       </div>
     </section>
@@ -607,6 +613,22 @@
         <div id="baliResult" style="margin-top:16px; text-align: left;"></div>
       </div>
     </div>
+
+    <!-- Add TTS and STT sections (if missing) -->
+    <section id="tts-section" style="margin-bottom:30px; display:none;">
+      <div style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;text-align:left;">
+        <p style="font-size:1.1rem;font-weight:bold;color:#ffd700;text-shadow:1px 1px 2px #222;">Text to Speech</p>
+        <textarea id="ttsInput" placeholder="Enter text to speak..." style="width:100%;min-height:80px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;padding:10px;font-size:1.05rem;background:rgba(255,255,255,0.85);color:#222;"></textarea>
+        <button onclick="speakText()" style="width:100%;margin-top:8px;">Speak</button>
+      </div>
+    </section>
+    <section id="stt-section" style="margin-bottom:30px; display:none;">
+      <div style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;text-align:left;">
+        <p style="font-size:1.1rem;font-weight:bold;color:#ffd700;text-shadow:1px 1px 2px #222;">Speech to Text</p>
+        <button onclick="startSpeechToText()" id="sttBtn" style="width:100%;margin-bottom:8px;">Start Listening</button>
+        <div id="sttResult" style="margin-top:16px;white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;"></div>
+      </div>
+    </section>
   </main>
 
   <audio id="winSound" src="/assets/sounds/victory-chime-366449.mp3"></audio>
@@ -617,14 +639,32 @@
     /// document.addEventListener('contextmenu', event => event.preventDefault());
     // --- MODIFIED: showSection function updated to include new sections ---
     function showSection(sectionId) {
-      document.getElementById('ai-chat-section').style.display = 'none';
-      document.getElementById('math-section-group').style.display = 'none';
-      document.getElementById('game-section-group').style.display = 'none';
-      document.getElementById('ner-section-group').style.display = 'none';
-      document.getElementById('image-section-group').style.display = 'none';
-      document.getElementById('aksara-sunda-section').style.display = 'none';
-      document.getElementById('image-classifier-section').style.display = 'none'; // Added
-      document.getElementById(sectionId).style.display = 'block';
+      // Hide all sections
+      const sections = [
+        'ai-chat-section',
+        'math-section-group',
+        'game-section-group',
+        'ner-section-group',
+        'image-section-group',
+        'aksara-sunda-section',
+        'aksara-jawa-section',
+        'aksara-bali-section',
+        'image-classifier-section',
+        'tts-section',
+        'stt-section'
+      ];
+      for (const id of sections) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      }
+      // Show requested section if it exists
+      const target = document.getElementById(sectionId);
+      if (target) {
+        target.style.display = 'block';
+      } else {
+        // Optionally log or ignore missing section
+        // console.warn('Section not found:', sectionId);
+      }
     }
 
     function send() {
@@ -1198,11 +1238,7 @@
       })
       .then(r => r.json())
       .then(data => {
-        let result = data.data ?? data.result ?? data.message ?? data;
-        if (typeof result === "object" && result !== null) {
-          if (result.result) result = result.result;
-          else result = JSON.stringify(result, null, 2);
-        }
+        let result = data.data?.result ?? data.result ?? data.message ?? data;
         resultDiv.innerText = result;
       })
       .catch(err => {
@@ -1210,477 +1246,41 @@
       });
     }
 
-    // Aksara Jawa
-    function aksaraJawa() {
-      const text = document.getElementById("textInput").value.trim();
-      const resultDiv = document.getElementById("jawaResult");
-      resultDiv.innerText = "Translate...";
-      fetch('/aksara_jawa', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-      })
-      .then(r => r.json())
-      .then(data => {
-        let result = data.data ?? data.result ?? data.message ?? data;
-        if (typeof result === "object" && result !== null) {
-          if (result.result) result = result.result;
-          else result = JSON.stringify(result, null, 2);
-        }
-        resultDiv.innerText = result;
-      })
-      .catch(err => {
-        resultDiv.innerText = "Error: " + (err.message || err);
-      });
+    // Text to Speech for Aksara Sunda (speaks the Latin input)
+    function speakAksaraSunda() {
+      const text = document.getElementById("latinInput").value.trim();
+      if (!text) return;
+      const synth = window.speechSynthesis;
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "su-ID"; // Sundanese locale, fallback to "id-ID" if not supported
+      synth.speak(utter);
     }
 
-    // Aksara Bali
-    function aksaraBali() {
-      const text = document.getElementById("baliInput").value.trim();
-      const resultDiv = document.getElementById("baliResult");
-      resultDiv.innerText = "Translate...";
-      fetch('/aksara_bali', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-      })
-      .then(r => r.json())
-      .then(data => {
-        let result = data.data ?? data.result ?? data.message ?? data;
-        if (typeof result === "object" && result !== null) {
-          if (result.result) result = result.result;
-          else result = JSON.stringify(result, null, 2);
-        }
-        resultDiv.innerText = result;
-      })
-      .catch(err => {
-        resultDiv.innerText = "Error: " + (err.message || err);
-      });
-    }
+    // Speech to Text for Aksara Sunda (fills Latin input)
+    let recognitionSunda;
+    function sttAksaraSunda() {
+      const latinInput = document.getElementById("latinInput");
+      latinInput.value = "";
+      // Use webkitSpeechRecognition for Chrome, SpeechRecognition for others
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition not supported in this browser.");
+        return;
+      }
+      recognitionSunda = new SpeechRecognition();
+      recognitionSunda.lang = "su-ID"; // Sundanese locale, fallback to "id-ID" if not supported
+      recognitionSunda.interimResults = false;
+      recognitionSunda.maxAlternatives = 1;
 
-    // Quadratic Equation
-    function mathQuadratic() {
-      const a = document.getElementById("quadA").value;
-      const b = document.getElementById("quadB").value;
-      const c = document.getElementById("quadC").value;
-      fetch(`/math/complex/quadratic?a=${a}&b=${b}&c=${c}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("quadResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.roots !== undefined) {
-            out += `Roots: ${Array.isArray(result.roots) ? result.roots.join(", ") : result.roots}<br>`;
-          }
-          if (result.discriminant !== undefined) {
-            out += `Discriminant: ${result.discriminant}<br>`;
-          }
-          if (result.message) {
-            out += `${result.message}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
+      recognitionSunda.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        latinInput.value = transcript;
+      };
+      recognitionSunda.onerror = function(event) {
+        alert("Error: " + event.error);
+      };
+      recognitionSunda.start();
     }
-
-    // 2D Shapes
-    function mathRectangle() {
-      const width = document.getElementById("rectWidth").value;
-      const height = document.getElementById("rectHeight").value;
-      fetch(`/math/2d/rectangle?width=${width}&height=${height}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("rectResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.area !== undefined) {
-            out += `Area: ${result.area}<br>`;
-          }
-          if (result.perimeter !== undefined) {
-            out += `Perimeter: ${result.perimeter}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-    function mathCircle() {
-      const radius = document.getElementById("circleRadius").value;
-      fetch(`/math/2d/circle?radius=${radius}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("circleResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.area !== undefined) {
-            out += `Area: ${result.area}<br>`;
-          }
-          if (result.perimeter !== undefined) {
-            out += `Perimeter: ${result.perimeter}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-    function mathSquare() {
-      const side = document.getElementById("squareSide").value;
-      fetch(`/math/2d/square?side=${side}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("squareResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.area !== undefined) {
-            out += `Area: ${result.area}<br>`;
-          }
-          if (result.perimeter !== undefined) {
-            out += `Perimeter: ${result.perimeter}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-    function mathTriangle() {
-      const width = document.getElementById("triWidth").value;
-      const height = document.getElementById("triHeight").value;
-      const side = document.getElementById("triSide").value;
-      fetch(`/math/2d/triangle?width=${width}&height=${height}&side=${side}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("triResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.area !== undefined) {
-            out += `Area: ${result.area}<br>`;
-          }
-          if (result.perimeter !== undefined) {
-            out += `Perimeter: ${result.perimeter}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-
-    // 3D Shapes
-    function mathCube() {
-      const side = document.getElementById("cubeSide").value;
-      fetch(`/math/3d/cube?side=${side}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("cubeResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.volume !== undefined) {
-            out += `Volume: ${result.volume}<br>`;
-          }
-          if (result.curved_surface_area !== undefined) {
-            out += `Curved Surface Area: ${result.curved_surface_area}<br>`;
-          }
-          if (result.surface_area) {
-            out += `Surface Area: ${result.surface_area}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-    function mathSphere() {
-      const radius = document.getElementById("sphereRadius").value;
-      fetch(`/math/3d/sphere?radius=${radius}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("sphereResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.volume !== undefined) {
-            out += `Volume: ${result.volume}<br>`;
-          }
-          if (result.curved_surface_area !== undefined) {
-            out += `Curved Surface Area: ${result.curved_surface_area}<br>`;
-          }
-          if (result.surface_area) {
-            out += `Surface Area: ${result.surface_area}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-    function mathCylinder() {
-      const radius = document.getElementById("cylRadius").value;
-      const height = document.getElementById("cylHeight").value;
-      fetch(`/math/3d/cylinder?radius=${radius}&height=${height}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("cylResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.volume !== undefined) {
-            out += `Volume: ${result.volume}<br>`;
-          }
-          if (result.curved_surface_area !== undefined) {
-            out += `Curved Surface Area: ${result.curved_surface_area}<br>`;
-          }
-          if (result.surface_area) {
-            out += `Surface Area: ${result.surface_area}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-    function mathCuboid() {
-      const side = document.getElementById("cuboidSide").value;
-      const length = document.getElementById("cuboidLength").value;
-      const height = document.getElementById("cuboidHeight").value;
-      fetch(`/math/3d/cuboid?side=${side}&length=${length}&height=${height}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("cuboidResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.volume !== undefined) {
-            out += `Volume: ${result.volume}<br>`;
-          }
-          if (result.curved_surface_area !== undefined) {
-            out += `Curved Surface Area: ${result.curved_surface_area}<br>`;
-          }
-          if (result.surface_area) {
-            out += `Surface Area: ${result.surface_area}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-    function mathTriangularPrism() {
-      const base = document.getElementById("triPrismBase").value;
-      const length = document.getElementById("triPrismLength").value;
-      const height = document.getElementById("triPrismLength").value;
-      fetch(`/math/3d/triangular_prism?base=${base}&length=${length}&height=${height}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("triPrismResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.volume !== undefined) {
-            out += `Volume: ${result.volume}<br>`;
-          }
-          if (result.lateral_surface_area !== undefined) {
-            out += `Lateral Surface Area: ${result.lateral_surface_area}<br>`;
-          }
-          if (result.total_surface_area) {
-            out += `Total Surface Area: ${result.total_surface_area}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-    function mathRectangularPrism() {
-      const width = document.getElementById("rectPrismWidth").value;
-      const length = document.getElementById("rectPrismLength").value;
-      const height = document.getElementById("rectPrismHeight").value;
-      fetch(`/math/3d/rectangular_prism?width=${width}&length=${length}&height=${height}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("triPrismResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.volume !== undefined) {
-            out += `Volume: ${result.volume}<br>`;
-          }
-          if (result.lateral_surface_area !== undefined) {
-            out += `Lateral Surface Area: ${result.lateral_surface_area}<br>`;
-          }
-          if (result.total_surface_area) {
-            out += `Total Surface Area: ${result.total_surface_area}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-    function mathPentagonalPrism() {
-      const side = document.getElementById("pentaPrismSide").value;
-      const height = document.getElementById("pentaPrismHeight").value;
-      fetch(`/math/3d/pentagonal_prism?side=${side}&height=${height}`)
-      .then(r => r.json()).then(data=>{
-        const resultDiv = document.getElementById("triPrismResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.volume !== undefined) {
-            out += `Volume: ${result.volume}<br>`;
-          }
-          if (result.lateral_surface_area !== undefined) {
-            out += `Lateral Surface Area: ${result.lateral_surface_area}<br>`;
-          }
-          if (result.total_surface_area) {
-            out += `Total Surface Area: ${result.total_surface_area}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-    function mathHexagonalPrism() {
-      const side = document.getElementById("hexaPrismSide").value;
-      const height = document.getElementById("hexaPrismHeight").value;
-      fetch(`/math/3d/hexagonal_prism?side=${side}&height=${height}`)
-      .then(r=>r.json()).then(data=>{
-        const resultDiv = document.getElementById("triPrismResult");
-        let result = data.data ?? data.result ?? data;
-        // If result is an object, format it nicely
-        if (typeof result === "object" && result !== null) {
-          let out = "";
-          if (result.volume !== undefined) {
-            out += `Volume: ${result.volume}<br>`;
-          }
-          if (result.lateral_surface_area !== undefined) {
-            out += `Lateral Surface Area: ${result.lateral_surface_area}<br>`;
-          }
-          if (result.total_surface_area) {
-            out += `Total Surface Area: ${result.total_surface_area}<br>`;
-          }
-          resultDiv.innerHTML = out || JSON.stringify(result);
-        } else {
-          resultDiv.innerText = result;
-        }
-      });
-    }
-
-    // BMI
-    function mathBMI() {
-      const weight = document.getElementById("bmiWeight").value;
-      const height = document.getElementById("bmiHeight").value;
-      fetch(`/bmi`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ weight: Number(weight), height: Number(height) })
-      })
-      .then(r=>r.json()).then(data=>{
-        if (data.data) {
-          document.getElementById("bmiResult").innerText = `BMI: ${data.data.bmi} - ${data.data.result}`;
-        } else {
-          document.getElementById("bmiResult").innerText = data.message || JSON.stringify(data);
-        }
-      });
-    }
-
-    // Show AI Chat by default on load
-    window.onload = function() {
-      showSection('ai-chat-section');
-      // --- ADDED: Event listener for the new form ---
-      const classifierForm = document.getElementById('imageClassifierForm');
-      classifierForm.addEventListener('submit', classifyImage);
-    };
-
-    // Image Generator Function
-    function generateImage() {
-      const prompt = document.getElementById("imagePrompt").value.trim();
-      const resultDiv = document.getElementById("imageResult");
-      resultDiv.innerHTML = "Generating...";
-      fetch('/image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: prompt })
-      })
-      .then(response => {
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        return response.json();
-      })
-      .then(data => {
-        // If the response is a URL, show image; if base64, show image; else show text
-        if (typeof data.image === "string" && data.image) {
-          if (data.image.startsWith("http") || data.image.startsWith("https")) {
-            resultDiv.innerHTML = `<img src="${data.image}" alt="Generated Image" style="max-width:100%;border-radius:12px;box-shadow:0 2px 8px #222;">`;
-          } else if (data.image.startsWith("data:image")) {
-            resultDiv.innerHTML = `<img src="${data.image}" alt="Generated Image" style="max-width:100%;border-radius:12px;box-shadow:0 2px 8px #222;">`;
-          } else {
-            resultDiv.innerText = data.image;
-          }
-        } else {
-          resultDiv.innerText = "No image generated.";
-        }
-      })
-      .catch(err => {
-        resultDiv.innerText = "Error generating image.\n" + (err.message || err);
-      });
-    }
-
-    // --- ADDED: New function for Image Classifier ---
-    function classifyImage(event) {
-      event.preventDefault(); // Prevent default form submission
-      
-      const form = event.target;
-      const formData = new FormData(form);
-      const resultDiv = document.getElementById("classifierResult");
-      
-      resultDiv.innerHTML = "Analyzing image...";
-
-      fetch('/classify_image', {
-        method: 'POST',
-        body: formData // Browser automatically sets Content-Type to multipart/form-data
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.error) {
-          throw new Error(data.error);
-        }
-        // Build the result HTML with a two-column layout
-        let resultHTML = `
-          <div style="display:flex; flex-wrap:wrap; gap: 20px; margin-top: 1rem;">
-            <div style="flex: 1; min-width: 200px;">
-              <h3 style="color:#ffd700; margin-top:0;">Uploaded Image:</h3>
-              <img src="${data.image_url}" alt="Uploaded for analysis" style="max-width:100%; border-radius:12px; box-shadow:0 2px 8px #222;">
-            </div>
-            <div style="flex: 2; min-width: 250px;">
-              <h3 style="color:#ffd700; margin-top:0;">Gemini's Analysis:</h3>
-              <p style="white-space: pre-wrap; margin-top: 0;">${data.description}</p>
-            </div>
-          </div>
-        `;
-        resultDiv.innerHTML = resultHTML;
-      })
-      .catch(err => {
-        resultDiv.innerText = "Error analyzing image.\n" + (err.message || err);
-      });
-    }
-    // --- END ADDED ---
 
     // Scientific Calculator
     function calculateScientific() {
@@ -1832,6 +1432,51 @@
       if (event.key === "Enter") {
         sendChatMessage();
       }
+    }
+
+    // Text to Speech
+    function speakText() {
+      const text = document.getElementById("ttsInput").value.trim();
+      if (!text) return;
+      const synth = window.speechSynthesis;
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-US";
+      synth.speak(utter);
+    }
+
+    // Speech to Text
+    let recognition;
+    function startSpeechToText() {
+      const sttBtn = document.getElementById("sttBtn");
+      const sttResult = document.getElementById("sttResult");
+      sttResult.innerText = "Listening...";
+      sttBtn.disabled = true;
+
+      // Use webkitSpeechRecognition for Chrome, SpeechRecognition for others
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        sttResult.innerText = "Speech recognition not supported in this browser.";
+        sttBtn.disabled = false;
+        return;
+      }
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        sttResult.innerText = transcript;
+        sttBtn.disabled = false;
+      };
+      recognition.onerror = function(event) {
+        sttResult.innerText = "Error: " + event.error;
+        sttBtn.disabled = false;
+      };
+      recognition.onend = function() {
+        sttBtn.disabled = false;
+      };
+      recognition.start();
     }
   </script>
 </body>
