@@ -47,16 +47,21 @@ def to_aksara_sunda(text):
 
       # default vokal "a"
       vowel_added = False
-      if i < len(word) and word[i] in vowel_signs:
-        cons += vowel_signs[word[i]]
+      if i < len(word):        
+        if word[i] in vowel_signs:
+          cons += vowel_signs[word[i]]
+        else:
+          cons += ""
+  
         i += 1
         vowel_added = True
+        
+      if not vowel_added and (i < len(word) and word[i] not in independent_vowels and word[i] not in consonants):
+        cons += virama
+      if not vowel_added:
+        cons += virama
 
       result += cons
-
-    # kalau setelah konsonan tidak ada vokal → tambahkan pamaéh
-    if not vowel_added and (i < len(word) and word[i] not in independent_vowels and word[i] not in consonants):
-      result += virama
 
     result += " "
   return {
