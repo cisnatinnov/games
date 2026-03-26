@@ -1282,6 +1282,46 @@
       recognitionSunda.start();
     }
 
+    // Aksara Jawa
+    function aksaraJawa() {
+      const text = document.getElementById("textInput").value.trim();
+      const resultDiv = document.getElementById("jawaResult");
+      resultDiv.innerText = "Translate...";
+      fetch('/aksara_jawa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      })
+      .then(r => r.json())
+      .then(data => {
+        let result = data.data?.result ?? data.result ?? data.message ?? data;
+        resultDiv.innerText = result;
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error: " + (err.message || err);
+      });
+    }
+
+    // Aksara Bali
+    function aksaraBali() {
+      const text = document.getElementById("baliInput").value.trim();
+      const resultDiv = document.getElementById("baliResult");
+      resultDiv.innerText = "Translate...";
+      fetch('/aksara_bali', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      })
+      .then(r => r.json())
+      .then(data => {
+        let result = data.data?.result ?? data.result ?? data.message ?? data;
+        resultDiv.innerText = result;
+      })
+      .catch(err => {
+        resultDiv.innerText = "Error: " + (err.message || err);
+      });
+    }
+
     // Scientific Calculator
     function calculateScientific() {
       const expr = document.getElementById("sciExpr").value;
