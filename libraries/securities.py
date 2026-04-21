@@ -1,3 +1,6 @@
+"""
+Secure JWT handling with proper secret management.
+"""
 import jwt
 import bcrypt
 import re
@@ -6,17 +9,18 @@ import json
 import random
 import string
 import time
+import secrets
 
 # -----------------------
 # Password hashing
 # -----------------------
 def gen_bcrypt(password: str) -> str:
     try:
-        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(8))
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(12))  # Increased cost factor
         return hashed.decode('utf-8')
     except Exception as e:
         print(e)
-        return None # type: ignore
+        return None
 
 def compare(pass_hash: str, password: str) -> bool:
     try:
@@ -26,22 +30,75 @@ def compare(pass_hash: str, password: str) -> bool:
         return False
 
 # -----------------------
-# JWT
+# JWT - Secure Implementation
 # -----------------------
-def gen_jwt(payload: dict) -> str:
+def _get_jwt_secret() -> str:
+    """
+    Get JWT secret from environment variable.
+    Raises ValueError if not set (no fallback to weak default).
+    """
+    secret = os.getenv("JWT_SECRET")
+    if not secret:
+        raise ValueError(
+            "JWT_SECRET environment variable is not set. "
+            "Generate a secure secret using: python -c 'import secrets; print(secrets.token_hex(32))'"
+        )
+    # Validate secret strength
+    if len(secret) < 32:
+        raise ValueError(
+            "JWT_SECRET is too weak. Must be at least 32 characters. "
+            "Generate a secure secret using: python -c 'import secrets; print(secrets.token_hex(32))'"
+        )
+    return secret
+
+def gen_jwt(payload: dict, expires_in: int = 3600) -> str:
+    """
+    Generate JWT token with expiration.
+    
+    Args:
+        payload: Dictionary containing token claims
+        expires_in: Token validity in seconds (default: 1 hour)
+    
+    Returns:
+        Encoded JWT token string
+    """
     try:
-        secret = os.getenv("JWT_SECRET", "default_secret")
-        token = jwt.encode(payload, secret, algorithm="HS256") # type: ignore
+        secret = _get_jwt_secret()
+        # Add expiration claim
+        import time
+        payload['exp'] = int(time.time()) + expires_in
+        payload['iat'] = int(time.time())
+        
+        token = jwt.encode(payload, secret, algorithm="HS256")
         return token
+    except ValueError:
+        raise  # Re-raise configuration errors
     except Exception as e:
         print(e)
-        return None # type: ignore
+        return None
 
 def verify_jwt(token: str):
+    """
+    Verify and decode JWT token.
+    
+    Args:
+        token: JWT token string
+    
+    Returns:
+        Decoded payload if valid, None otherwise
+    """
     try:
-        secret = os.getenv("JWT_SECRET", "default_secret")
-        decoded = jwt.decode(token, secret, algorithms=["HS256"]) # type: ignore
+        secret = _get_jwt_secret()
+        decoded = jwt.decode(token, secret, algorithms=["HS256"])
         return decoded
+    except jwt.ExpiredSignatureError:
+        print("Token has expired")
+        return None
+    except jwt.InvalidTokenError as e:
+        print(f"Invalid token: {e}")
+        return None
+    except ValueError:
+        raise  # Re-raise configuration errors
     except Exception as e:
         print(e)
         return None

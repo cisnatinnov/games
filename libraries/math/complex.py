@@ -57,13 +57,41 @@ def sqrt(num):
   else:
     return response
 
-def log(num, base):
+def log(num, base=None):
+  """
+  Calculate logarithm with optional base.
+  
+  Args:
+      num: The number to calculate log of (must be positive)
+      base: Optional base for the logarithm. If None or empty, uses natural log (e).
+  
+  Returns:
+      Dictionary with status and result or error message.
+  """
   try:
-    if base:
-      base = float(base)
-      log_op = round(math.log(num, base), 2)
+    # Validate input
+    if num is None or num <= 0:
+      return {
+        'status': 400,
+        'message': 'Number must be positive',
+        'data': {}
+      }
     
-    log_op = round(math.log(num), 2)
+    # Handle base parameter correctly
+    if base is not None and base != '':
+      base = float(base)
+      # Base must be positive and not equal to 1
+      if base <= 0 or base == 1:
+        return {
+          'status': 400,
+          'message': 'Base must be positive and not equal to 1',
+          'data': {}
+        }
+      log_op = round(math.log(num, base), 2)
+    else:
+      # Natural logarithm (base e)
+      log_op = round(math.log(num), 2)
+    
     response = {
       'status': 200,
       'message': '',
