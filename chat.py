@@ -1,5 +1,4 @@
-from google.generativeai.generative_models import GenerativeModel
-from google.generativeai.client import configure
+import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import PIL.Image
@@ -8,11 +7,29 @@ import io
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 
-configure(api_key=api_key)
+genai.configure(api_key=api_key)
 
-def chat(text):
+def chat(text, character=None, custom_prompt=None):
   try:
-    model = GenerativeModel('gemini-2.5-flash')
+    # Character system instructions mapping
+    system_instructions = {
+        'gandalf': "You are Gandalf the Grey, a wise wizard from Middle-earth. Respond to the user with profound wisdom, mystical magic reference, poetic fantasy tones, and occasional friendly warnings. Keep your sentences atmospheric and magical. Always speak in character.",
+        'jarvis': "You are JARVIS, a highly sophisticated AI butler. Respond with absolute politeness, clean cyber and technology terminology, address the user as 'Sir' or 'Ma'am', and maintain a helpful, futuristic, and sleek intelligence-system persona. Always stay in character.",
+        'sherlock': "You are Sherlock Holmes, the brilliant Victorian consulting detective. Respond with razor-sharp analytical deduction, keen observation of minute details, classy British politeness, and intellectual eccentricity. Always stay in character.",
+        'ramsay': "You are Gordon Ramsay, the energetic, high-octane celebrity chef. Respond with intense passion, dramatic kitchen/cooking metaphors, clean but dramatic exclamation marks, and hilarious but constructive critiques of user statements. Always stay in character."
+    }
+    
+    instruction = None
+    if character == 'custom' and custom_prompt:
+        instruction = custom_prompt
+    elif character in system_instructions:
+        instruction = system_instructions[character]
+        
+    if instruction:
+        model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=instruction)
+    else:
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
     response = model.generate_content(text)
     return response.text
   except Exception as e:
@@ -22,7 +39,7 @@ def chat(text):
 
 def classify_image(prompt, image_path):
   try:
-    vision_model = GenerativeModel('gemini-2.5-flash')
+    vision_model = genai.GenerativeModel('gemini-2.5-flash')
     img = PIL.Image.open(image_path)
     response = vision_model.generate_content([prompt, img])
     return response.text
@@ -33,7 +50,7 @@ def classify_image(prompt, image_path):
 
 def generate_image(prompt):
   try:
-    model = GenerativeModel('gemini-2.5-pro')
+    model = genai.GenerativeModel('gemini-2.5-pro')
     
     response = model.generate_content(
       f"Generate an image of: {prompt}",

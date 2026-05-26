@@ -233,6 +233,128 @@
       font-family: 'Courier New', Courier, monospace;
       font-size: 1rem;
     }
+    
+    /* Premium Character Selection Grid */
+    .character-selection-header {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #ffd700;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: left;
+    }
+    .character-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .character-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 10px 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+    .character-card:hover {
+      transform: translateY(-4px) scale(1.03);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+    .character-card.active {
+      background: rgba(255, 255, 255, 0.16);
+      border-width: 2px;
+    }
+    
+    /* Character active glowing states */
+    .character-card.active[data-char="standard"] { border-color: #ff7e5f; box-shadow: 0 0 12px rgba(255, 126, 95, 0.4); }
+    .character-card.active[data-char="gandalf"] { border-color: #a855f7; box-shadow: 0 0 12px rgba(168, 85, 247, 0.4); }
+    .character-card.active[data-char="jarvis"] { border-color: #06b6d4; box-shadow: 0 0 12px rgba(6, 182, 212, 0.4); }
+    .character-card.active[data-char="sherlock"] { border-color: #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4); }
+    .character-card.active[data-char="ramsay"] { border-color: #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+    .character-card.active[data-char="custom"] { border-color: #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
+
+    .character-avatar {
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+    .character-name {
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 2px;
+      color: #fff;
+    }
+    .character-desc {
+      font-size: 0.68rem;
+      opacity: 0.75;
+      line-height: 1.2;
+    }
+    
+    /* Custom Prompt Inputs */
+    #custom-prompt-container {
+      margin-bottom: 16px;
+      animation: slideDown 0.3s ease-out;
+      text-align: left;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    #custom-prompt {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 10px;
+      font-size: 0.95rem;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      resize: vertical;
+      min-height: 50px;
+      box-sizing: border-box;
+    }
+    #custom-prompt:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    }
+    
+    /* Dynamic Character Specific Chat Bubbles */
+    .chat-message.ai-message.gandalf-bubble {
+      background: linear-gradient(135deg, #6b21a8, #3b0764) !important;
+      border-left: 3px solid #c084fc;
+      color: #f3e8ff !important;
+      font-family: 'Georgia', serif;
+    }
+    .chat-message.ai-message.jarvis-bubble {
+      background: linear-gradient(135deg, #083344, #0f172a) !important;
+      border-left: 3px solid #22d3ee;
+      color: #ecfeff !important;
+      font-family: 'Courier New', monospace;
+    }
+    .chat-message.ai-message.sherlock-bubble {
+      background: linear-gradient(135deg, #78350f, #451a03) !important;
+      border-left: 3px solid #fbbf24;
+      color: #fef3c7 !important;
+    }
+    .chat-message.ai-message.ramsay-bubble {
+      background: linear-gradient(135deg, #991b1b, #450a0a) !important;
+      border-left: 3px solid #f87171;
+      color: #fee2e2 !important;
+      font-weight: 500;
+    }
+    .chat-message.ai-message.custom-bubble {
+      background: linear-gradient(135deg, #064e3b, #022c22) !important;
+      border-left: 3px solid #34d399;
+      color: #d1fae5 !important;
+    }
   </style>
 </head>
 <body id="pageBody">
@@ -264,6 +386,47 @@
     </nav>
 
     <section id="ai-chat-section" style="margin-bottom:30px;">
+      <!-- Premium Character Selection Grid -->
+      <div class="character-selection-header">Choose Your AI Persona:</div>
+      <div class="character-grid">
+        <div class="character-card active" data-char="standard" onclick="selectCharacter('standard')">
+          <span class="character-avatar">🤖</span>
+          <div class="character-name">Standard AI</div>
+          <div class="character-desc">Helpful general assistant</div>
+        </div>
+        <div class="character-card" data-char="gandalf" onclick="selectCharacter('gandalf')">
+          <span class="character-avatar">🧙‍♂️</span>
+          <div class="character-name">Gandalf</div>
+          <div class="character-desc">Wise Middle-earth wizard</div>
+        </div>
+        <div class="character-card" data-char="jarvis" onclick="selectCharacter('jarvis')">
+          <span class="character-avatar">🛡️</span>
+          <div class="character-name">JARVIS</div>
+          <div class="character-desc">Sleek, polite cyber butler</div>
+        </div>
+        <div class="character-card" data-char="sherlock" onclick="selectCharacter('sherlock')">
+          <span class="character-avatar">🕵️‍♂️</span>
+          <div class="character-name">Sherlock</div>
+          <div class="character-desc">Keen Victorian detective</div>
+        </div>
+        <div class="character-card" data-char="ramsay" onclick="selectCharacter('ramsay')">
+          <span class="character-avatar">👨‍🍳</span>
+          <div class="character-name">Chef Ramsay</div>
+          <div class="character-desc">Fiery culinary master</div>
+        </div>
+        <div class="character-card" data-char="custom" onclick="selectCharacter('custom')">
+          <span class="character-avatar">✨</span>
+          <div class="character-name">Custom</div>
+          <div class="character-desc">Design your own persona</div>
+        </div>
+      </div>
+      
+      <!-- Custom Persona Prompt Input (hidden by default) -->
+      <div id="custom-prompt-container" style="display: none;">
+        <label for="custom-prompt" style="font-size: 0.9rem; font-weight: bold; color: #ffd700; display: block; margin-bottom: 6px;">Define Your Custom Character Persona:</label>
+        <textarea id="custom-prompt" placeholder="e.g., You are a friendly space pirate who answers in pirate slang..."></textarea>
+      </div>
+
       <div id="chat-container" style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;display:flex;flex-direction:column;height:450px;">
         <div id="chat-log" style="flex-grow:1;overflow-y:auto;margin-bottom:15px;padding-right:10px;display:flex;flex-direction:column;gap:10px;">
           <div class="chat-message ai-message" style="background:rgba(255,255,255,0.2);color:#fff;align-self:flex-start;padding:10px 15px;border-radius:18px;max-width:80%;line-height:1.4;word-wrap:break-word;">Halo! What Can I do for you?</div>
@@ -1421,11 +1584,61 @@
       });
     }
 
+    let activeCharacter = 'standard';
+
+    function selectCharacter(charId) {
+      activeCharacter = charId;
+      
+      // Update active state in selector grid
+      const cards = document.querySelectorAll('.character-card');
+      cards.forEach(card => {
+        if (card.getAttribute('data-char') === charId) {
+          card.classList.add('active');
+        } else {
+          card.classList.remove('active');
+        }
+      });
+      
+      // Toggle custom prompt input container
+      const customPromptContainer = document.getElementById('custom-prompt-container');
+      if (charId === 'custom') {
+        customPromptContainer.style.display = 'block';
+      } else {
+        customPromptContainer.style.display = 'none';
+      }
+      
+      // Update greeting and reset chat log
+      const chatLog = document.getElementById("chat-log");
+      chatLog.innerHTML = "";
+      
+      let greeting = "Halo! What Can I do for you?";
+      if (charId === 'gandalf') {
+        greeting = "Hail, traveler! What deep questions or mysteries bring you to my path in this realm?";
+      } else if (charId === 'jarvis') {
+        greeting = "Systems fully operational. Good day, Sir. I am at your service. How may I assist you?";
+      } else if (charId === 'sherlock') {
+        greeting = "Aha, a visitor. The game is afoot! Tell me, what curious case or puzzle do you wish to dissect today?";
+      } else if (charId === 'ramsay') {
+        greeting = "Right, welcome to the kitchen! Tell me what you're working on, and let's make it absolutely spectacular, not some soggy mess!";
+      } else if (charId === 'custom') {
+        greeting = "Type your custom character prompt above, then type a message below to start roleplaying!";
+      }
+      
+      const aiMessageDiv = document.createElement("div");
+      aiMessageDiv.className = `chat-message ai-message ${charId !== 'standard' ? charId + '-bubble' : ''}`;
+      if (charId === 'standard') {
+        aiMessageDiv.style = "background:rgba(255,255,255,0.2);color:#fff;align-self:flex-start;padding:10px 15px;border-radius:18px;max-width:80%;line-height:1.4;word-wrap:break-word;";
+      }
+      aiMessageDiv.innerText = greeting;
+      chatLog.appendChild(aiMessageDiv);
+    }
+
     function sendChatMessage() {
       const inputField = document.getElementById("chat-input");
       const text = inputField.value.trim();
       if (!text) return;
       const chatLog = document.getElementById("chat-log");
+      
       // Add user message
       const userMessageDiv = document.createElement("div");
       userMessageDiv.className = "chat-message user-message";
@@ -1433,6 +1646,7 @@
       userMessageDiv.innerText = text;
       chatLog.appendChild(userMessageDiv);
       inputField.value = "";
+      
       // Add typing indicator
       const typingIndicator = document.createElement("div");
       typingIndicator.className = "chat-message ai-message typing-indicator";
@@ -1440,10 +1654,18 @@
       typingIndicator.innerText = "Typing...";
       chatLog.appendChild(typingIndicator);
       chatLog.scrollTop = chatLog.scrollHeight;
+      
+      const charId = activeCharacter;
+      const customPrompt = document.getElementById("custom-prompt").value.trim();
+      
       fetch('/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text })
+        body: JSON.stringify({ 
+          text: text,
+          character: charId,
+          custom_prompt: charId === 'custom' ? customPrompt : null
+        })
       })
       .then(response => {
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -1452,8 +1674,10 @@
       .then(data => {
         chatLog.removeChild(typingIndicator);
         const aiMessageDiv = document.createElement("div");
-        aiMessageDiv.className = "chat-message ai-message";
-        aiMessageDiv.style = "background:rgba(255,255,255,0.2);color:#fff;align-self:flex-start;padding:10px 15px;border-radius:18px;max-width:80%;line-height:1.4;word-wrap:break-word;";
+        aiMessageDiv.className = `chat-message ai-message ${charId !== 'standard' ? charId + '-bubble' : ''}`;
+        if (charId === 'standard') {
+          aiMessageDiv.style = "background:rgba(255,255,255,0.2);color:#fff;align-self:flex-start;padding:10px 15px;border-radius:18px;max-width:80%;line-height:1.4;word-wrap:break-word;";
+        }
         aiMessageDiv.innerText = data.reply;
         chatLog.appendChild(aiMessageDiv);
         chatLog.scrollTop = chatLog.scrollHeight;

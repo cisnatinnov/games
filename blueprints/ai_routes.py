@@ -46,11 +46,14 @@ def chat_op():
     if not text or not isinstance(text, str):
         return jsonify({'status': 400, 'message': 'Missing or empty text parameter'}), 400
     
-    # Limit input length
-    if len(text) > 5000:
-        return jsonify({'status': 400, 'message': 'Text too long (max 5000 characters)'}), 400
+    character = data.get('character')
+    custom_prompt = data.get('custom_prompt')
     
-    resp = chat(text)
+    # Limit custom prompt length if provided
+    if custom_prompt and len(custom_prompt) > 2000:
+        return jsonify({'status': 400, 'message': 'Custom prompt too long (max 2000 characters)'}), 400
+    
+    resp = chat(text, character=character, custom_prompt=custom_prompt)
     return jsonify({"reply": resp})
 
 @ai_bp.route('/image', methods=['POST'])

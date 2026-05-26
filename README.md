@@ -5,9 +5,6 @@ AI and Games Launcher
 ## Create .env File
 GOOGLE_API_KEY=YourGoogleAPIKey
 
-## activate the venv
-.venv/Scripts/Activate.ps1
-
 ## Install Necessary depedencies
 pip install -r requirements.txt
 
