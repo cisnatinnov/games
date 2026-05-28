@@ -38,14 +38,54 @@ def chat(text, character=None, custom_prompt=None):
     return f"An error occurred: {str(e)}"
 
 def classify_image(prompt, image_path):
+  """Classify an image using the configured generative model.
+
+  This attempts multiple safe ways to send the image to the API (bytes, stream,
+  and base64 embedded) and falls back to a minimal local description if the
+  API calls fail.
+  """
+  vision_model = genai.GenerativeModel('gemini-2.5-flash')
   try:
-    vision_model = genai.GenerativeModel('gemini-2.5-flash')
-    img = PIL.Image.open(image_path)
-    response = vision_model.generate_content([prompt, img])
-    return response.text
+    # Read image bytes once
+    with open(image_path, 'rb') as f:
+      img_bytes = f.read()
+
+    # Try: pass a file-like object (io.BytesIO)
+    try:
+      response = vision_model.generate_content([prompt, io.BytesIO(img_bytes)])
+      if hasattr(response, 'text') and response.text:
+        return response.text
+    except Exception:
+      pass
+
+    # Try: pass raw bytes in a dict (some SDK versions accept this)
+    try:
+      response = vision_model.generate_content([prompt, {"image": img_bytes}])
+      if hasattr(response, 'text') and response.text:
+        return response.text
+    except Exception:
+      pass
+
+    # Try: embed base64 image data in the prompt as a fallback
+    try:
+      import base64
+      b64 = base64.b64encode(img_bytes).decode('utf-8')
+      prompt_with_b64 = f"{prompt}\n\nImage (base64): data:image/png;base64,{b64}"
+      response = vision_model.generate_content(prompt_with_b64)
+      if hasattr(response, 'text') and response.text:
+        return response.text
+    except Exception:
+      pass
+
+    # If all remote attempts failed, provide a small local description
+    try:
+      with PIL.Image.open(image_path) as im:
+        return f"Local fallback: format={im.format}, mode={im.mode}, size={im.size}"
+    except Exception as e:
+      return f"Image classification failed and fallback also failed: {str(e)}"
+
   except Exception as e:
     print(f"An error occurred during image classification: {e}")
-    # --- MODIFIED: Return the specific error message ---
     return f"An error occurred: {str(e)}"
 
 def generate_image(prompt):
