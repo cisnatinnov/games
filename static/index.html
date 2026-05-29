@@ -1868,6 +1868,71 @@
       synth.speak(utter);
     }
 
+    // Image generation: call /image and display returned image or error
+    function generateImage() {
+      const btn = event && event.target ? event.target : null;
+      const prompt = document.getElementById("imagePrompt").value.trim();
+      const resultDiv = document.getElementById("imageResult");
+      if (!prompt) {
+        resultDiv.innerText = "Please enter a prompt.";
+        return;
+      }
+      if (btn) { btn.disabled = true; btn.innerText = 'Generating...'; }
+      resultDiv.innerHTML = 'Generating...';
+
+      fetch('/image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: prompt })
+      }).then(r => r.json())
+        .then(async data => {
+          if (!data || !data.image) {
+            resultDiv.innerText = 'No image returned.';
+            return;
+          }
+          const val = data.image;
+
+          // If already a data URL
+          if (typeof val === 'string' && val.startsWith('data:image')) {
+            resultDiv.innerHTML = `<img src="${val}" style="max-width:100%;border-radius:8px;"/>`;
+            return;
+          }
+
+          // If contains base64 snippet
+          if (typeof val === 'string' && val.includes('base64,')) {
+            const idx = val.indexOf('base64,');
+            const b64 = val.slice(idx + 7);
+            resultDiv.innerHTML = `<img src="data:image/png;base64,${b64}" style="max-width:100%;border-radius:8px;"/>`;
+            return;
+          }
+
+          // Try fetching the returned path using several common prefixes
+          const candidates = [val, '/' + val, '/static/' + val, '/uploads/' + val];
+          for (const url of candidates) {
+            try {
+              const resp = await fetch(url);
+              if (!resp.ok) continue;
+              const ct = resp.headers.get('Content-Type') || '';
+              if (ct.startsWith('image/')) {
+                const blob = await resp.blob();
+                const urlObj = URL.createObjectURL(blob);
+                resultDiv.innerHTML = `<img src="${urlObj}" style="max-width:100%;border-radius:8px;"/>`;
+                return;
+              }
+            } catch (e) { /* ignore and try next */ }
+          }
+
+          // Fallback: show raw returned text
+          resultDiv.innerText = typeof val === 'string' ? val : JSON.stringify(val);
+        })
+        .catch(err => {
+          resultDiv.innerText = 'Request failed: ' + err.message;
+        })
+        .finally(() => {
+          if (btn) { btn.disabled = false; btn.innerText = 'Generate'; }
+        });
+    }
+
     // Speech to Text
     let recognition;
     function startSpeechToText() {
