@@ -540,10 +540,10 @@
             <input id="sciExpr" type="text" placeholder="Enter expression (e.g. sin(30)+log(10))" style="width:70%;">
             <button onclick="calculateScientific()" style="width:25%;">Calculate</button>
             <div id="sciResult" style="margin-top:10px;font-family:'Courier New',Courier,monospace;"></div>
-            <div style="margin-top:15px;">
-              <span style="font-size:0.95em;color:#ffd700;">Supported: +, -, *, /, ^, sqrt(), sin(), cos(), tan(),
-                log(), exp(), abs(), factorial(), pi, e</span>
-            </div>
+                <div style="margin-top:15px;">
+                  <span id="sciSupported" style="font-size:0.95em;color:#ffd700;">Supported: +, -, *, /, ^, sqrt(), sin(), cos(), tan(),
+                    log() (natural), ln(), log10(), exp(), abs(), factorial(), pi, e</span>
+                </div>
           </div>
         </details>
         <details>
@@ -964,36 +964,7 @@
       }
     }
 
-    function send() {
-      const text = document.getElementById("text").value.trim().toLowerCase();
-      const result = document.getElementById("result");
-
-      // Correct native JavaScript code
-      document.getElementById("reply").innerText = "reply...";
-      fetch('/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          text: text
-        })
-      })
-        .then(response => {
-          // First, handle potential network or server errors.
-          // The fetch() promise only rejects on a network failure, not HTTP errors like 404 or 500.
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-
-          // This returns a new promise that resolves with the parsed JSON data.
-          return response.json();
-        })
-        .then(data => {
-          console.log('Success:', data);
-          document.getElementById("reply").innerText = data.reply;
-        });
-    }
+    // legacy `send()` removed — use `sendChatMessage()` instead
 
     let step = 0;
     let playerName = "";
@@ -1619,25 +1590,244 @@
         });
     }
 
-    // Scientific Calculator
-    function calculateScientific() {
-      const expr = document.getElementById("sciExpr").value;
+    // math.js external loading disabled to avoid CSP/script-src violations.
+    // We will rely on the built-in, CSP-safe evaluator instead of injecting external scripts.
+    function loadMathIfNeeded(timeoutMs = 4000) {
+      return new Promise((resolve) => {
+        if (typeof math !== 'undefined' && typeof math.evaluate === 'function') return resolve(true);
+        // Do not attempt to load external scripts in environments that set strict CSP.
+        // Always use the local fallback evaluator.
+        return resolve(false);
+      });
+    }
+
+    // Small expression parser/evaluator (shunting-yard -> RPN) - no eval/Function
+    function tokenizeExpression(s) {
+      const tokens = [];
+      let i = 0;
+      while (i < s.length) {
+        const ch = s[i];
+        if (ch === ' ' || ch === '\t' || ch === '\n') { i++; continue; }
+        if (/[0-9.]/.test(ch)) {
+          let j = i + 1;
+          while (j < s.length && /[0-9.]/.test(s[j])) j++;
+          tokens.push({type: 'number', value: parseFloat(s.slice(i, j))});
+          i = j; continue;
+        }
+        if (/[A-Za-z_]/.test(ch)) {
+          let j = i + 1;
+          while (j < s.length && /[A-Za-z0-9_]/.test(s[j])) j++;
+          tokens.push({type: 'ident', value: s.slice(i, j)});
+          i = j; continue;
+        }
+        if (ch === ',' ) { tokens.push({type: 'comma'}); i++; continue; }
+        if ('+-*/^()'.includes(ch)) { tokens.push({type: 'op', value: ch}); i++; continue; }
+        throw new Error('Unexpected character: ' + ch);
+      }
+      return tokens;
+    }
+
+    function toRPN(tokens) {
+      const out = [];
+      const ops = [];
+      const precedence = { '+':2, '-':2, '*':3, '/':3, '^':4, 'u-':5 };
+      const rightAssoc = new Set(['^','u-']);
+
+      let prev = null;
+      for (let t of tokens) {
+        if (t.type === 'number') { out.push(t); prev = t; continue; }
+        if (t.type === 'ident') {
+          // function or constant; push as ident and treat functions when '(' follows
+          out.push(t); prev = t; continue;
+        }
+        if (t.type === 'comma') {
+          while (ops.length && ops[ops.length-1].value !== '(') out.push(ops.pop());
+          if (!ops.length) throw new Error('Misplaced comma');
+          prev = t; continue;
+        }
+        if (t.type === 'op') {
+          const v = t.value;
+          if (v === '(') { ops.push(t); prev = t; continue; }
+          if (v === ')') {
+            while (ops.length && ops[ops.length-1].value !== '(') out.push(ops.pop());
+            if (!ops.length) throw new Error('Mismatched parentheses');
+            ops.pop(); // pop '('
+            prev = t; continue;
+          }
+
+          // detect unary minus
+          let op = v;
+          if (v === '-' && (prev === null || (prev.type === 'op' && prev.value !== ')') || prev.type === 'comma')) {
+            op = 'u-';
+          }
+
+          while (ops.length) {
+            const top = ops[ops.length-1].value;
+            if (top === '(') break;
+            const pTop = precedence[top] || 0;
+            const pOp = precedence[op] || 0;
+            if ((rightAssoc.has(op) && pOp < pTop) || (!rightAssoc.has(op) && pOp <= pTop)) {
+              out.push(ops.pop());
+            } else break;
+          }
+          ops.push({type:'op', value:op}); prev = t; continue;
+        }
+      }
+      while (ops.length) {
+        const o = ops.pop();
+        if (o.value === '(' || o.value === ')') throw new Error('Mismatched parentheses');
+        out.push(o);
+      }
+      return out;
+    }
+
+    function evalRPN(rpn, helpers) {
+      const stack = [];
+      for (const t of rpn) {
+        if (t.type === 'number') { stack.push(t.value); continue; }
+        if (t.type === 'ident') {
+          const name = t.value;
+          if (name in helpers && typeof helpers[name] === 'number') {
+            stack.push(helpers[name]);
+            continue;
+          }
+          // push function name marker to be handled when '(' was present — since we pushed idents inline,
+          // treat standalone identifiers as constants otherwise error
+          if (name in helpers && typeof helpers[name] === 'function') {
+            // function should have been represented as ident followed by '(' tokens; here we'll treat as variable
+            throw new Error('Unexpected function usage: ' + name);
+          }
+          throw new Error('Unknown identifier: ' + name);
+        }
+        if (t.type === 'op') {
+          const op = t.value;
+          if (op === 'u-') {
+            const a = stack.pop();
+            if (a === undefined) throw new Error('Invalid expression');
+            stack.push(-a); continue;
+          }
+          if (['+','-','*','/','^'].includes(op)) {
+            const b = stack.pop();
+            const a = stack.pop();
+            if (a === undefined || b === undefined) throw new Error('Invalid expression');
+            let res;
+            if (op === '+') res = a + b;
+            else if (op === '-') res = a - b;
+            else if (op === '*') res = a * b;
+            else if (op === '/') res = a / b;
+            else if (op === '^') res = Math.pow(a, b);
+            stack.push(res); continue;
+          }
+          // function application: operator tokens won't represent functions here
+          throw new Error('Unsupported operator in RPN: ' + op);
+        }
+      }
+      if (stack.length !== 1) throw new Error('Invalid expression result');
+      return stack[0];
+    }
+
+    async function calculateScientific() {
+      const expr = document.getElementById("sciExpr").value || "";
       const resultDiv = document.getElementById("sciResult");
       resultDiv.innerText = "Calculating...";
-      fetch(`/scientific_calc?expr=${encodeURIComponent(expr)}`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.status === 200 && data.result !== undefined) {
-            resultDiv.innerText = `Result: ${data.result}`;
-          } else if (data.message) {
-            resultDiv.innerText = data.message;
-          } else {
-            resultDiv.innerText = "Error or unsupported expression.";
+
+      try {
+        if (!/^[0-9+\-*/^()., \t\nA-Za-z]+$/.test(expr)) {
+          throw new Error('Expression contains invalid characters');
+        }
+
+        // Interpret `log()` as natural log per request
+        let safeExpr = expr.replace(/\blog\s*\(/g, 'ln(');
+
+        const allowed = new Set(['sqrt','sin','cos','tan','log10','ln','log','exp','abs','factorial','pi','e']);
+        const ids = safeExpr.match(/[A-Za-z_]\w*/g) || [];
+        for (const id of ids) {
+          if (!allowed.has(id)) throw new Error(`Unsupported function or identifier: ${id}`);
+        }
+
+        let res;
+        try {
+          await loadMathIfNeeded();
+          if (typeof math !== 'undefined' && typeof math.evaluate === 'function') {
+            resultDiv.innerText = 'Using math.js for evaluation...';
+            res = math.evaluate(safeExpr);
           }
-        })
-        .catch(() => {
-          resultDiv.innerText = "Calculation error.";
-        });
+        } catch (loadErr) {
+          // show warning but continue with fallback
+          console.warn('math.js load error:', loadErr);
+          resultDiv.innerText = 'Warning: math.js failed to load, using fallback evaluator.';
+        }
+
+        if (res === undefined) {
+          // Evaluate without using eval/Function to comply with CSP
+          const jsExpr = safeExpr;
+          // Convert to tokens, RPN, then evaluate with helpers
+          const tokens = tokenizeExpression(jsExpr);
+
+          // Replace identifier tokens that are functions followed by '(' into function markers
+          // We'll implement simple function handling: transform patterns ident '(' number ')' into calls
+          // For simplicity, convert function calls by keeping idents and parentheses; our RPN ignores functions,
+          // so we'll pre-evaluate simple single-arg function calls using a regex approach.
+
+          // Simple pre-evaluation for functions of form fname(arg)
+          // Note: handle nested parentheses by using a loop until no function patterns remain
+          let exprToEval = jsExpr;
+          const helperFuncs = {
+            sin: (x) => Math.sin(x),
+            cos: (x) => Math.cos(x),
+            tan: (x) => Math.tan(x),
+            sqrt: (x) => Math.sqrt(x),
+            exp: (x) => Math.exp(x),
+            abs: (x) => Math.abs(x),
+            log10: (x) => (Math.log10 ? Math.log10(x) : Math.log(x) / Math.LN10),
+            ln: (x) => Math.log(x),
+            log: (x) => Math.log(x),
+            factorial: (n) => {
+              n = Number(n);
+              if (!Number.isFinite(n) || n < 0) throw new Error('Invalid factorial input');
+              if (Math.floor(n) !== n) throw new Error('Factorial only supports integers');
+              let v = 1; for (let i=2;i<=n;i++) v*=i; return v;
+            }
+          };
+
+          // Replace constants
+          exprToEval = exprToEval.replace(/\bpi\b/g, String(Math.PI)).replace(/\be\b/g, String(Math.E));
+
+          // Iteratively evaluate innermost function calls
+          const funcCallRe = /([A-Za-z_]\w*)\s*\(([^()]+)\)/;
+          let iterCount = 0;
+          while (funcCallRe.test(exprToEval)) {
+            if (++iterCount > 50) throw new Error('Too complex expression');
+            exprToEval = exprToEval.replace(funcCallRe, (match, fname, arg) => {
+              fname = fname.trim();
+              if (!(fname in helperFuncs)) throw new Error('Unsupported function: ' + fname);
+              // Evaluate the arg recursively using RPN
+              try {
+                const argTokens = tokenizeExpression(arg);
+                const rpn = toRPN(argTokens);
+                const aval = evalRPN(rpn, { });
+                const fres = helperFuncs[fname](aval);
+                return String(fres);
+              } catch (e) {
+                throw new Error(`Error in function ${fname} argument: ${e.message}`);
+              }
+            });
+          }
+
+          // Now evaluate remaining arithmetic expression
+          try {
+            const finalTokens = tokenizeExpression(exprToEval);
+            const rpn = toRPN(finalTokens);
+            res = evalRPN(rpn, { });
+          } catch (e) {
+            throw new Error('Fallback evaluation error: ' + e.message);
+          }
+        }
+
+        resultDiv.innerText = `Result: ${res}`;
+      } catch (err) {
+        resultDiv.innerText = `Error: ${err.message || err}`;
+      }
     }
 
     function mathBMI() {
@@ -1664,6 +1854,187 @@
         .catch(() => {
           resultDiv.innerText = "Calculation error.";
         });
+    }
+
+    // 2D shape calculations (client-side)
+    function mathRectangle() {
+      const w = parseFloat(document.getElementById('rectWidth').value);
+      const h = parseFloat(document.getElementById('rectHeight').value);
+      const res = document.getElementById('rectResult');
+      if (isNaN(w) || isNaN(h)) {
+        res.innerText = 'Please enter valid width and height.';
+        return;
+      }
+      const area = w * h;
+      const perimeter = 2 * (w + h);
+      res.innerText = `Area: ${area}, Perimeter: ${perimeter}`;
+    }
+
+    function mathCircle() {
+      const r = parseFloat(document.getElementById('circleRadius').value);
+      const res = document.getElementById('circleResult');
+      if (isNaN(r) || r < 0) {
+        res.innerText = 'Please enter a valid radius.';
+        return;
+      }
+      const area = Math.PI * r * r;
+      const circumference = 2 * Math.PI * r;
+      res.innerText = `Area: ${area.toFixed(4)}, Circumference: ${circumference.toFixed(4)}`;
+    }
+
+    function mathSquare() {
+      const s = parseFloat(document.getElementById('squareSide').value);
+      const res = document.getElementById('squareResult');
+      if (isNaN(s) || s < 0) {
+        res.innerText = 'Please enter a valid side length.';
+        return;
+      }
+      const area = s * s;
+      const perimeter = 4 * s;
+      res.innerText = `Area: ${area}, Perimeter: ${perimeter}`;
+    }
+
+    function mathTriangle() {
+      const w = parseFloat(document.getElementById('triWidth').value);
+      const h = parseFloat(document.getElementById('triHeight').value);
+      const s = parseFloat(document.getElementById('triSide').value);
+      const res = document.getElementById('triResult');
+      if ((isNaN(w) || isNaN(h)) && isNaN(s)) {
+        res.innerText = 'Please enter base & height or a side length.';
+        return;
+      }
+      let area = null;
+      if (!isNaN(w) && !isNaN(h)) area = 0.5 * w * h;
+      let perimeter = null;
+      if (!isNaN(s) && isNaN(w) && isNaN(h)) {
+        // equilateral
+        perimeter = 3 * s;
+      } else if (!isNaN(s) && !isNaN(w) && !isNaN(h)) {
+        perimeter = w + h + s;
+      }
+      const parts = [];
+      if (area !== null) parts.push(`Area: ${area}`);
+      if (perimeter !== null) parts.push(`Perimeter: ${perimeter}`);
+      res.innerText = parts.join(', ') || 'Insufficient data.';
+    }
+
+    // 3D shape calculations
+    function mathCube() {
+      const s = parseFloat(document.getElementById('cubeSide').value);
+      const res = document.getElementById('cubeResult');
+      if (isNaN(s) || s < 0) { res.innerText = 'Please enter a valid side.'; return; }
+      const volume = Math.pow(s,3);
+      const surface = 6 * s * s;
+      res.innerText = `Volume: ${volume}, Surface Area: ${surface}`;
+    }
+
+    function mathSphere() {
+      const r = parseFloat(document.getElementById('sphereRadius').value);
+      const res = document.getElementById('sphereResult');
+      if (isNaN(r) || r < 0) { res.innerText = 'Please enter a valid radius.'; return; }
+      const volume = (4/3) * Math.PI * Math.pow(r,3);
+      const surface = 4 * Math.PI * r * r;
+      res.innerText = `Volume: ${volume.toFixed(4)}, Surface Area: ${surface.toFixed(4)}`;
+    }
+
+    function mathCylinder() {
+      const r = parseFloat(document.getElementById('cylRadius').value);
+      const h = parseFloat(document.getElementById('cylHeight').value);
+      const res = document.getElementById('cylResult');
+      if (isNaN(r) || isNaN(h) || r < 0 || h < 0) { res.innerText = 'Please enter valid radius and height.'; return; }
+      const volume = Math.PI * r * r * h;
+      const surface = 2 * Math.PI * r * (r + h);
+      res.innerText = `Volume: ${volume.toFixed(4)}, Surface Area: ${surface.toFixed(4)}`;
+    }
+
+    function mathCuboid() {
+      const s = parseFloat(document.getElementById('cuboidSide').value);
+      const l = parseFloat(document.getElementById('cuboidLength').value);
+      const h = parseFloat(document.getElementById('cuboidHeight').value);
+      const res = document.getElementById('cuboidResult');
+      if (isNaN(s) || isNaN(l) || isNaN(h) || s < 0 || l < 0 || h < 0) { res.innerText = 'Please enter valid dimensions.'; return; }
+      const volume = s * l * h;
+      const surface = 2 * (s*l + s*h + l*h);
+      res.innerText = `Volume: ${volume}, Surface Area: ${surface}`;
+    }
+
+    function mathTriangularPrism() {
+      const b = parseFloat(document.getElementById('triPrismBase').value);
+      const h = parseFloat(document.getElementById('triPrismHeight').value);
+      const L = parseFloat(document.getElementById('triPrismLength').value);
+      const res = document.getElementById('triPrismResult');
+      if (isNaN(b) || isNaN(h) || isNaN(L) || b < 0 || h < 0 || L < 0) { res.innerText = 'Please enter valid base, height and length.'; return; }
+      const baseArea = 0.5 * b * h;
+      const hyp = Math.sqrt(b*b + h*h);
+      const perimeter = b + h + hyp;
+      const volume = baseArea * L;
+      const surface = 2*baseArea + perimeter * L;
+      res.innerText = `Volume: ${volume.toFixed(4)}, Surface Area: ${surface.toFixed(4)}`;
+    }
+
+    function mathRectangularPrism() {
+      const w = parseFloat(document.getElementById('rectPrismWidth').value);
+      const h = parseFloat(document.getElementById('rectPrismHeight').value);
+      const l = parseFloat(document.getElementById('rectPrismLength').value);
+      const res = document.getElementById('rectPrismResult');
+      if (isNaN(w) || isNaN(h) || isNaN(l) || w < 0 || h < 0 || l < 0) { res.innerText = 'Please enter valid dimensions.'; return; }
+      const volume = w * h * l;
+      const surface = 2 * (w*h + w*l + h*l);
+      res.innerText = `Volume: ${volume}, Surface Area: ${surface}`;
+    }
+
+    function mathPentagonalPrism() {
+      const s = parseFloat(document.getElementById('pentaPrismSide').value);
+      const h = parseFloat(document.getElementById('pentaPrismHeight').value);
+      const res = document.getElementById('pentaPrismResult');
+      if (isNaN(s) || isNaN(h) || s < 0 || h < 0) { res.innerText = 'Please enter valid side and height.'; return; }
+      // Regular pentagon area = (5/4) * s^2 * cot(pi/5)
+      const baseArea = (5/4) * s * s * (1 / Math.tan(Math.PI/5));
+      const perimeter = 5 * s;
+      const volume = baseArea * h;
+      const surface = perimeter * h + 2 * baseArea;
+      res.innerText = `Volume: ${volume.toFixed(4)}, Surface Area: ${surface.toFixed(4)}`;
+    }
+
+    function mathHexagonalPrism() {
+      const s = parseFloat(document.getElementById('hexaPrismSide').value);
+      const h = parseFloat(document.getElementById('hexaPrismHeight').value);
+      const res = document.getElementById('hexaPrismResult');
+      if (isNaN(s) || isNaN(h) || s < 0 || h < 0) { res.innerText = 'Please enter valid side and height.'; return; }
+      // Regular hexagon area = (3*sqrt(3)/2) * s^2
+      const baseArea = (3 * Math.sqrt(3) / 2) * s * s;
+      const perimeter = 6 * s;
+      const volume = baseArea * h;
+      const surface = perimeter * h + 2 * baseArea;
+      res.innerText = `Volume: ${volume.toFixed(4)}, Surface Area: ${surface.toFixed(4)}`;
+    }
+
+    // Quadratic solver (client-side)
+    function mathQuadratic() {
+      const a = parseFloat(document.getElementById('quadA').value);
+      const b = parseFloat(document.getElementById('quadB').value);
+      const c = parseFloat(document.getElementById('quadC').value);
+      const res = document.getElementById('quadResult');
+      if (isNaN(a) || isNaN(b) || isNaN(c)) { res.innerText = 'Please enter valid coefficients.'; return; }
+      if (a === 0) {
+        if (b === 0) { res.innerText = 'Not an equation.'; return; }
+        const root = -c / b;
+        res.innerText = `Linear solution: x = ${root}`;
+        return;
+      }
+      const disc = b*b - 4*a*c;
+      if (disc > 0) {
+        const r1 = (-b + Math.sqrt(disc)) / (2*a);
+        const r2 = (-b - Math.sqrt(disc)) / (2*a);
+        res.innerText = `Roots: x1 = ${r1}, x2 = ${r2}`;
+      } else if (disc === 0) {
+        const r = -b / (2*a);
+        res.innerText = `One real root: x = ${r}`;
+      } else {
+        const real = -b / (2*a);
+        const imag = Math.sqrt(-disc) / (2*a);
+        res.innerText = `Complex roots: ${real.toFixed(4)} ± ${imag.toFixed(4)}i`;
+      }
     }
 
     // Statistics Calculator
