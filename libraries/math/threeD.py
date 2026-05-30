@@ -19,8 +19,9 @@ def cube(side):
   
 def sphere(radius):
   volume = (4/3) * math.pi * radius ** 3
-  curved_surface_area = 0
+  # For a sphere the curved surface area equals the total surface area
   surface_area = 4 * math.pi * radius ** 2
+  curved_surface_area = surface_area
   return result(volume, curved_surface_area, surface_area)
   
 def cylinder(radius, height):
@@ -39,15 +40,8 @@ def prism(base_area, height, perimeter):
   volume = base_area * height
   lateral_surface_area = perimeter * height
   total_surface_area = 2 * base_area + lateral_surface_area
-  return {
-    'status': 200,
-    'message': '',
-    'data': {
-      'volume': round(volume, 2),
-      'lateral_surface_area': round(lateral_surface_area, 2),
-      'total_surface_area': round(total_surface_area, 2)
-    }
-  }
+  # Use the same response shape as `result` (curved_surface_area == lateral_surface_area)
+  return result(volume, lateral_surface_area, total_surface_area)
 
 def triangular_prism(base, height, length):
   base_area = 0.5 * base * height

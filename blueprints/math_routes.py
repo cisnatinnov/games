@@ -16,7 +16,7 @@ from libraries.math.threeD import (
     triangular_prism, rectangular_prism, 
     pentagonal_prism, hexagonal_prism
 )
-from libraries.math.statisticts import (
+from libraries.math.statistics import (
     mean_ungroup, mean_group, 
     median_ungroup, median_group, 
     mode_ungroup, mode_group, 
