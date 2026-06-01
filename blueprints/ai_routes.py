@@ -12,6 +12,7 @@ ai_bp = Blueprint('ai', __name__, url_prefix='/')
 
 # Import AI functions
 from chat import chat, generate_image, classify_image
+from genai_compat import genai as genai_module
 
 # Allowed MIME types for additional security
 ALLOWED_MIME_TYPES = {
@@ -165,3 +166,33 @@ def uploaded_file(filename):
         return jsonify({"error": "Access denied"}), 403
     
     return send_from_directory(upload_folder, safe_filename)
+
+
+@ai_bp.route('/provider', methods=['GET'])
+def get_provider():
+    try:
+        # report current provider and credential source
+        # Read runtime state from the genai_compat module to ensure
+        # changes from `set_provider` are reflected accurately.
+        import genai_compat as genai_compat_mod
+        return jsonify({
+            'provider': getattr(genai_compat_mod, '_sdk_name', None) or None,
+            'provider_hint': os.getenv('GENAI_PROVIDER'),
+            'credential_source': getattr(genai_module, '_credential_source', lambda: None)()
+        })
+    except Exception:
+        return jsonify({'error': 'Could not determine provider state'}), 500
+
+
+@ai_bp.route('/provider', methods=['POST'])
+def set_provider():
+    data = request.get_json() or {}
+    provider = data.get('provider')
+    api_key = data.get('api_key')
+    if not provider or not isinstance(provider, str):
+        return jsonify({'error': 'Missing provider parameter'}), 400
+    try:
+        new = genai_module.set_provider(provider, api_key=api_key)
+        return jsonify({'provider': new, 'credential_source': genai_module._credential_source()}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

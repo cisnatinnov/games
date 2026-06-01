@@ -8,10 +8,7 @@ __pycache__/
 env/
 venv/
 .venv/
-.ENV
-.ENV.local
-.env.*
-.ENV.*
+.env
 
 # Build artifacts
 build/
