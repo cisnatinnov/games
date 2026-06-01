@@ -162,6 +162,8 @@ def bmi():
     
     weight = data.get('weight')
     height_cm = data.get('height')
+    gender = data.get('gender')
+    age = data.get('age')
     
     # Validate weight
     if weight is None:
@@ -189,24 +191,52 @@ def bmi():
     except ZeroDivisionError:
         return jsonify({'status': 400, 'message': 'Invalid height value'}), 400
     
-    # Determine category
-    if bmi_rounded <= 16:
-        result = "You are very underweight"
-    elif bmi_rounded <= 18.5:
-        result = "You are underweight"
-    elif bmi_rounded <= 25:
-        result = "Congrats! You are Healthy"
-    elif bmi_rounded <= 30:
-        result = "You are overweight"
+    # Interpret result, consider age
+    interpretation = ''
+    # Validate and use age if provided
+    if age is not None and age != '':
+        try:
+            age_val = int(age)
+            if age_val < 0 or age_val > 120:
+                return jsonify({'status': 400, 'message': 'Invalid age value'}), 400
+        except Exception:
+            return jsonify({'status': 400, 'message': 'Invalid age value'}), 400
     else:
-        result = "You are very overweight"
+        age_val = None
+
+    notes = []
+    if age_val is not None and age_val < 20:
+        # For children/adolescents BMI-for-age percentiles are used
+        interpretation = 'For individuals under 20, interpret using BMI-for-age percentiles (not implemented here).'
+        notes.append('Use BMI-for-age percentiles for children/adolescents; this service returns numeric BMI only.')
+    else:
+        # Adult categories (standard WHO-like thresholds)
+            if bmi_rounded <= 16:
+                interpretation = "Very underweight"
+            elif bmi_rounded <= 18.5:
+                interpretation = "Underweight"
+            elif bmi_rounded <= 25:
+                interpretation = "Healthy (normal weight)"
+            elif bmi_rounded <= 30:
+                interpretation = "Overweight (pre-obese)"
+            else:
+                interpretation = "Obese"
+
+            # Gender/age notes
+            if gender:
+                notes.append('Gender provided: interpret results with body-composition differences in mind.')
+            if age_val is not None and age_val >= 65:
+                notes.append('For older adults BMI may underestimate body fat; consider other clinical measures.')
     
     return jsonify({
         'status': 200,
         'message': '',
         'data': {
             'bmi': bmi_rounded,
-            'result': result
+            'result': interpretation,
+            'age': age_val,
+            'gender': gender,
+            'notes': notes
         }
     }), 200
 

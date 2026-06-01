@@ -2,7 +2,8 @@ import math
 
 def factorial(n):
   try:
-    factorial_op = round(math.factorial(n), 2)
+    # factorial returns an integer for integer inputs; keep exact value
+    factorial_op = math.factorial(n)
     response = {
       'status': 200,
       'message': '',
