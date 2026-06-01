@@ -5,6 +5,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI & Game Launcher</title>
+  <script>
+    (function(){
+      function loadScript(src, cb, err){ var s=document.createElement('script'); s.src=src; s.defer=true; s.onload=function(){cb && cb()}; s.onerror=function(){err && err()}; document.head.appendChild(s); }
+      function loadCSS(href){ var l=document.createElement('link'); l.rel='stylesheet'; l.href=href; document.head.appendChild(l); }
+
+      // Try local KaTeX first
+      loadScript('vendor/katex/katex.min.js', function(){
+        loadCSS('vendor/katex/katex.min.css');
+        loadScript('vendor/katex/contrib/auto-render.min.js', function(){
+          if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});
+        }, function(){
+          // fallback to CDN auto-render
+          loadScript('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js', function(){ if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]}); });
+        });
+      }, function(){
+        // local katex not available -> load CDN
+        loadCSS('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css');
+        loadScript('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js', function(){
+          loadScript('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js', function(){ if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]}); });
+        });
+      });
+    })();
+  </script>
   <style>
     body {
       margin: 0;
@@ -544,6 +567,11 @@
                   <span id="sciSupported" style="font-size:0.95em;color:#ffd700;">Supported: +, -, *, /, ^, sqrt(), sin(), cos(), tan(),
                     log() (natural), ln(), log10(), exp(), abs(), factorial(), pi, e</span>
                 </div>
+                <div style="margin-top:10px;color:#ddd;font-size:0.95em;">
+                  <strong style="color:#ffd700;">Basic formulas:</strong>
+                  <div style="margin-top:6px;">Add: $a + b$ &nbsp;|&nbsp; Subtract: $a - b$ &nbsp;|&nbsp; Multiply: $a \times b$ &nbsp;|&nbsp; Divide: $\dfrac{a}{b}$</div>
+                  <div style="margin-top:4px;">Power: $a^{b}$ &nbsp;|&nbsp; Square root: $\sqrt{x}$ &nbsp;|&nbsp; Log: $\ln(x)$ or $\log_{\text{base}}(x)$</div>
+                </div>
           </div>
         </details>
         <details>
@@ -571,6 +599,13 @@
             <input id="triSide" type="number" placeholder="side" style="width:50px;">
             <button onclick="mathTriangle()">Triangle</button>
             <span id="triResult"></span>
+            <div style="margin-top:8px;color:#ddd;font-size:0.95em;">
+              <strong style="color:#ffd700;">Formulas:</strong>
+              <div>Rectangle: Area = $w \times h$; Perimeter = $2(w + h)$</div>
+              <div>Circle: Area = $\pi r^{2}$; Circumference = $2\pi r$</div>
+              <div>Square: Area = $s^{2}$; Perimeter = $4s$</div>
+              <div>Triangle: Area = $\tfrac{1}{2} \, b\, h$; Perimeter = sum of sides</div>
+            </div>
           </div>
         </details>
         <details>
@@ -624,6 +659,14 @@
             <input id="hexaPrismHeight" type="number" placeholder="height" style="width:70px;">
             <button onclick="mathHexagonalPrism()">Hexagonal Prism</button>
             <span id="hexaPrismResult"></span>
+            <div style="margin-top:8px;color:#ddd;font-size:0.95em;">
+              <strong style="color:#ffd700;">3D Formulas:</strong>
+              <div>Cube: Volume = $s^{3}$; Surface Area = $6s^{2}$</div>
+              <div>Sphere: Volume = $\tfrac{4}{3}\pi r^{3}$; Surface Area = $4\pi r^{2}$</div>
+              <div>Cylinder: Volume = $\pi r^{2} h$; Surface Area = $2\pi r(r + h)$</div>
+              <div>Cuboid: Volume = $l \times w \times h$; Surface Area = $2(lw + lh + wh)$</div>
+              <div>Prism: Volume = $\text{baseArea} \times \text{height}$; Lateral area = $\text{perimeter} \times \text{height}$</div>
+            </div>
           </div>
         </details>
         <details>
@@ -637,17 +680,37 @@
             <input id="quadC" type="number" placeholder="c" style="width:50px;">
             <button onclick="mathQuadratic()" style="width:100%;margin-top:10px;">Solve</button>
             <div id="quadResult" style="margin-top:10px;font-family:'Courier New',Courier,monospace;"></div>
+            <div style="margin-top:8px;color:#ddd;font-size:0.95em;">
+              <strong style="color:#ffd700;">Quadratic formula:</strong>
+              <div>Discriminant: $\Delta = b^{2} - 4ac$</div>
+              <div>Roots: $x = \dfrac{-b \pm \sqrt{\Delta}}{2a}$</div>
+              <div>(If $\Delta < 0$ there are no real roots; if $\Delta = 0$ one real root)</div>
+            </div>
           </div>
         </details>
         <details>
           <summary style="font-weight:bold;color:#ffd700;">BMI Calculator</summary>
           <div style="margin-top:10px;">
             <label>Weight (kg):</label>
-            <input id="bmiWeight" type="number" placeholder="weight" style="width:70px;">
+            <input id="bmiWeight" type="number" placeholder="weight (kg)" style="width:70px;">
             <label>Height (cm):</label>
             <input id="bmiHeight" type="number" placeholder="height" style="width:70px;">
+            <label style="margin-left:8px;">Gender:</label>
+            <select id="bmiGender" style="width:90px;">
+              <option value="">Prefer not to say</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+            <label style="margin-left:8px;">Age:</label>
+            <input id="bmiAge" type="number" placeholder="age" style="width:50px;">
             <button onclick="mathBMI()">Calculate BMI</button>
             <span id="bmiResult"></span>
+            <div style="margin-top:8px;color:#ddd;font-size:0.95em;">
+              <strong style="color:#ffd700;">BMI formula:</strong>
+              <div>$$\displaystyle \text{BMI} = \frac{\text{weight (kg)}}{(\text{height (m)})^{2}}$$</div>
+              <div>$$\displaystyle \text{If height in cm: BMI} = \frac{\text{weight}}{(\text{height (cm)} / 100)^{2}}$$</div>
+            </div>
           </div>
         </details>
         <details>
@@ -665,6 +728,13 @@
               </div>
               <div id="statsResult"
                 style="white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;">
+              </div>
+              <div style="margin-top:8px;color:#ddd;font-size:0.95em;">
+                <strong style="color:#ffd700;">Ungrouped formulas:</strong>
+                <div>Mean: $\bar{x} = \dfrac{\sum x_i}{n}$</div>
+                <div>Median: middle value of sorted data (or average of two middle values)</div>
+                <div>Mode: most frequent value</div>
+                <div>Std Dev (sample): $s = \sqrt{\dfrac{\sum (x_i - \bar{x})^{2}}{n - 1}}$</div>
               </div>
             </div>
 
@@ -685,6 +755,12 @@
               </div>
               <div id="groupedStatsResult"
                 style="white-space:pre-wrap;background:rgba(0,0,0,0.1);border-radius:8px;padding:10px;color:#ffd700;">
+              </div>
+              <div style="margin-top:8px;color:#ddd;font-size:0.95em;">
+                <strong style="color:#ffd700;">Grouped formulas:</strong>
+                <div>Mean: use class midpoints $m_i = L + (i+0.5)h$; $\bar{x} = \dfrac{\sum m_i f_i}{\sum f_i}$</div>
+                <div>Median: $L + \dfrac{(N/2 - C)}{f_m} \times h$ where $C$ is cumulative freq before median class</div>
+                <div>Mode (interpolated): $L + \dfrac{(f_m - f_{1})}{2f_m - f_{1} - f_{2}} \times h$</div>
               </div>
             </div>
           </div>
@@ -1833,22 +1909,71 @@
     function mathBMI() {
       const weight = document.getElementById("bmiWeight").value;
       const height = document.getElementById("bmiHeight").value;
+      const gender = document.getElementById("bmiGender").value;
+      const age = document.getElementById("bmiAge").value;
       const resultDiv = document.getElementById("bmiResult");
       resultDiv.innerText = "Calculating...";
       fetch(`/bmi`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ weight, height })
+        body: JSON.stringify({ weight, height, gender, age })
       })
         .then(r => r.json())
         .then(data => {
-          let result = data.data?.result ?? data.result ?? data.message ?? data;
-          if (data.status === 200 && result !== undefined) {
-            resultDiv.innerText = `Result: ${result}`;
-          } else if (data.message) {
+          if (data && data.status === 200 && data.data) {
+            const bmi = data.data.bmi;
+            const message = data.data.result || data.message || '';
+            const ageReturned = data.data.age;
+            const genderReturned = data.data.gender;
+            const notes = data.data.notes || [];
+            // Render formula/result with KaTeX if available
+            try {
+              const w = parseFloat(weight);
+              const h = parseFloat(height);
+              const h_m = (h / 100).toFixed(2);
+              const latex = `$$\\mathrm{BMI} = \\frac{${w}\\,\\mathrm{kg}}{(${h_m}\\,\\mathrm{m})^{2}} = ${bmi}$$`;
+              if (window.katex && katex.renderToString) {
+                const katexHtml = katex.renderToString(latex, {throwOnError:false, displayMode:true});
+                let notesHtml = '';
+                if (ageReturned) notesHtml += `<div>Age: ${ageReturned}</div>`;
+                if (genderReturned) notesHtml += `<div>Gender: ${genderReturned}</div>`;
+                if (notes.length) notesHtml += `<div style="margin-top:6px;color:#ffd700;">Notes:<br>${notes.map(n=>`- ${n}`).join('<br>')}</div>`;
+                // Category-specific guideline
+                const guidelines = {
+                  'Very underweight': 'Guideline: Seek medical advice; evaluate nutritional intake and underlying causes.',
+                  'Underweight': 'Guideline: Consider a nutrition assessment and gradual weight gain plan.',
+                  'Healthy (normal weight)': 'Guideline: Maintain balanced diet and regular physical activity.',
+                  'Overweight (pre-obese)': 'Guideline: Adopt caloric control and increased physical activity; monitor progress.',
+                  'Obese': 'Guideline: Seek clinical advice for structured weight-loss interventions and screening for comorbidities.',
+                  'For individuals under 20, interpret using BMI-for-age percentiles (not implemented here).': 'Guideline: Use BMI-for-age percentiles and consult a pediatrician or clinician.'
+                };
+                const guideline = guidelines[message] || '';
+                const guidelineHtml = guideline ? `<div style="margin-top:8px;color:#fff;background:rgba(0,0,0,0.18);padding:8px;border-radius:6px;">${guideline}</div>` : '';
+                resultDiv.innerHTML = katexHtml + notesHtml + `<div style="margin-top:6px;color:#ffd700;">${message}</div>` + guidelineHtml;
+              } else {
+                // Fallback to plain text
+                let extra = [];
+                if (ageReturned !== undefined) extra.push(`age: ${ageReturned}`);
+                if (genderReturned) extra.push(`gender: ${genderReturned}`);
+                // Add short guideline text for fallback
+                const guidelinesFallback = {
+                  'Very underweight': 'Seek medical advice; evaluate nutritional intake and underlying causes.',
+                  'Underweight': 'Consider a nutrition assessment and gradual weight gain plan.',
+                  'Healthy (normal weight)': 'Maintain balanced diet and regular physical activity.',
+                  'Overweight (pre-obese)': 'Adopt caloric control and increased physical activity; monitor progress.',
+                  'Obese': 'Seek clinical advice for structured weight-loss interventions and screening for comorbidities.',
+                  'For individuals under 20, interpret using BMI-for-age percentiles (not implemented here).': 'Use BMI-for-age percentiles and consult a pediatrician or clinician.'
+                };
+                const guide = guidelinesFallback[message] ? ' — ' + guidelinesFallback[message] : '';
+                resultDiv.innerText = `BMI: ${bmi} — ${message}` + (extra.length ? ` (${extra.join(', ')})` : '') + guide;
+              }
+            } catch (e) {
+              resultDiv.innerText = `BMI: ${bmi} — ${message}`;
+            }
+          } else if (data && data.message) {
             resultDiv.innerText = data.message;
           } else {
-            resultDiv.innerText = "Error or unsupported expression.";
+            resultDiv.innerText = "Calculation error.";
           }
         })
         .catch(() => {
