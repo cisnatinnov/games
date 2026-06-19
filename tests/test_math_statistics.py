@@ -1,5 +1,8 @@
 import unittest
-from libraries.math import statistics
+try:
+    from games.libraries.math import statistics
+except Exception:
+    from libraries.math import statistics
 
 class TestGroupedStatistics(unittest.TestCase):
     def test_mean_group(self):

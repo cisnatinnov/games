@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Translator Demo</title>
+</head>
+<body>
+  <h1>Translator Demo</h1>
+  <form id="frm">
+    <label>Target script: <input name="target" value="jawa"></label><br>
+    <label>Text: <input name="text" value="salam"></label><br>
+    <button type="submit">Translate</button>
+  </form>
+  <pre id="out"></pre>
+  <script>
+    document.getElementById('frm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const data = {target: fd.get('target'), text: fd.get('text')};
+      const res = await fetch('/translator/translate', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      const j = await res.json();
+      document.getElementById('out').textContent = JSON.stringify(j, null, 2);
+    });
+  </script>
+</body>
+</html>

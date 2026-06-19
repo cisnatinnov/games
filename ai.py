@@ -15,14 +15,27 @@ Security improvements:
 """
 import os
 from flask import Flask, send_from_directory, jsonify
-from config.settings import Config
-from middleware.security import add_security_headers
+try:
+    from games.config.settings import Config
+    from games.middleware.security import add_security_headers
 
-# Import blueprints
-from blueprints.math_routes import math_bp
-from blueprints.api_routes import api_bp
-from blueprints.ai_routes import ai_bp
-from blueprints.games_routes import games_bp
+    # Import blueprints
+    from games.blueprints.math_routes import math_bp
+    from games.blueprints.api_routes import api_bp
+    from games.blueprints.ai_routes import ai_bp
+    from games.blueprints.games_routes import games_bp
+    from games.blueprints.translator_routes import translator_bp
+except Exception:
+    # Fallback for direct script/module execution where package imports may not resolve
+    from config.settings import Config
+    from middleware.security import add_security_headers
+
+    # Import blueprints (module-level)
+    from blueprints.math_routes import math_bp
+    from blueprints.api_routes import api_bp
+    from blueprints.ai_routes import ai_bp
+    from blueprints.games_routes import games_bp
+    from blueprints.translator_routes import translator_bp
 
 
 def create_app(config_class=Config):
@@ -48,6 +61,7 @@ def create_app(config_class=Config):
     app.register_blueprint(api_bp)
     app.register_blueprint(ai_bp)
     app.register_blueprint(games_bp)
+    app.register_blueprint(translator_bp)
     
     # Add security headers to all responses
     @app.after_request

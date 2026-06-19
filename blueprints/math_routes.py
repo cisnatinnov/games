@@ -3,25 +3,46 @@ Math operations blueprint.
 Consolidates all math-related routes with proper validation and error handling.
 """
 from flask import Blueprint, request, jsonify
-from middleware.security import rate_limit, validate_positive_number, validate_non_negative_number, validate_integer
+try:
+    from games.middleware.security import rate_limit, validate_positive_number, validate_non_negative_number, validate_integer
 
-math_bp = Blueprint('math', __name__, url_prefix='/math')
+    math_bp = Blueprint('math', __name__, url_prefix='/math')
 
-# Import math functions
-from libraries.math.simple import add, divide, multiply, subtract
-from libraries.math.complex import factorial, log, power, quadratic, sqrt
-from libraries.math.twoD import circle, rectangle, square, triangle
-from libraries.math.threeD import (
-    cube, cuboid, cylinder, sphere, 
-    triangular_prism, rectangular_prism, 
-    pentagonal_prism, hexagonal_prism
-)
-from libraries.math.statistics import (
-    mean_ungroup, mean_group, 
-    median_ungroup, median_group, 
-    mode_ungroup, mode_group, 
-    standard_deviation
-)
+    # Import math functions
+    from games.libraries.math.simple import add, divide, multiply, subtract
+    from games.libraries.math.complex import factorial, log, power, quadratic, sqrt
+    from games.libraries.math.twoD import circle, rectangle, square, triangle
+    from games.libraries.math.threeD import (
+        cube, cuboid, cylinder, sphere, 
+        triangular_prism, rectangular_prism, 
+        pentagonal_prism, hexagonal_prism
+    )
+    from games.libraries.math.statistics import (
+        mean_ungroup, mean_group, 
+        median_ungroup, median_group, 
+        mode_ungroup, mode_group, 
+        standard_deviation
+    )
+except Exception:
+    from middleware.security import rate_limit, validate_positive_number, validate_non_negative_number, validate_integer
+
+    math_bp = Blueprint('math', __name__, url_prefix='/math')
+
+    # Import math functions (fallback)
+    from libraries.math.simple import add, divide, multiply, subtract
+    from libraries.math.complex import factorial, log, power, quadratic, sqrt
+    from libraries.math.twoD import circle, rectangle, square, triangle
+    from libraries.math.threeD import (
+        cube, cuboid, cylinder, sphere, 
+        triangular_prism, rectangular_prism, 
+        pentagonal_prism, hexagonal_prism
+    )
+    from libraries.math.statistics import (
+        mean_ungroup, mean_group, 
+        median_ungroup, median_group, 
+        mode_ungroup, mode_group, 
+        standard_deviation
+    )
 
 def _get_float_params(params, *param_names):
     """Helper to extract and validate float parameters."""

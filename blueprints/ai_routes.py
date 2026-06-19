@@ -6,13 +6,22 @@ import os
 import mimetypes
 from flask import Blueprint, request, jsonify, send_from_directory, current_app
 from werkzeug.utils import secure_filename
-from middleware.security import rate_limit, validate_json_required, sanitize_filename
+try:
+    from games.middleware.security import rate_limit, validate_json_required, sanitize_filename
 
-ai_bp = Blueprint('ai', __name__, url_prefix='/')
+    ai_bp = Blueprint('ai', __name__, url_prefix='/')
 
-# Import AI functions
-from chat import chat, generate_image, classify_image
-from genai_compat import genai as genai_module
+    # Import AI functions
+    from games.chat import chat, generate_image, classify_image
+    from games.genai_compat import genai as genai_module
+except Exception:
+    from middleware.security import rate_limit, validate_json_required, sanitize_filename
+
+    ai_bp = Blueprint('ai', __name__, url_prefix='/')
+
+    # Import AI functions (fallback)
+    from chat import chat, generate_image, classify_image
+    from genai_compat import genai as genai_module
 
 # Allowed MIME types for additional security
 ALLOWED_MIME_TYPES = {

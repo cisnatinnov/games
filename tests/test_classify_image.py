@@ -1,9 +1,19 @@
 import os
+import sys
 import unittest
 from PIL import Image
 
-from ai import create_app
-from config.settings import Config
+# Ensure project root on sys.path so `games` package imports resolve
+_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+
+try:
+    from games.ai import create_app
+    from games.config.settings import Config
+except Exception:
+    from ai import create_app
+    from config.settings import Config
 
 
 class ClassifyImageTest(unittest.TestCase):

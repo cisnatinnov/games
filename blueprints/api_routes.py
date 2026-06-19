@@ -4,16 +4,28 @@ Includes proper input validation and security measures.
 """
 from flask import Blueprint, request, jsonify
 import requests
-from middleware.security import rate_limit, validate_json_required, validate_positive_number
+try:
+    from games.middleware.security import rate_limit, validate_json_required, validate_positive_number
 
-api_bp = Blueprint('api', __name__, url_prefix='/')
+    api_bp = Blueprint('api', __name__, url_prefix='/')
 
-# Import library functions
-from libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
-from libraries.aksara_sunda import to_aksara_sunda
-from libraries.aksara_jawa import to_aksara_jawa
-from libraries.aksara_bali import to_aksara_bali
-from libraries.securities import decode_morse, encode_morse
+    # Import library functions
+    from games.libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
+    from games.libraries.aksara_sunda import to_aksara_sunda
+    from games.libraries.aksara_jawa import to_aksara_jawa
+    from games.libraries.aksara_bali import to_aksara_bali
+    from games.libraries.securities import decode_morse, encode_morse
+except Exception:
+    from middleware.security import rate_limit, validate_json_required, validate_positive_number
+
+    api_bp = Blueprint('api', __name__, url_prefix='/')
+
+    # Import library functions (fallback)
+    from libraries.ner import analyze_text, analyze_summarize, text_generator, analyze_sentiment
+    from libraries.aksara_sunda import to_aksara_sunda
+    from libraries.aksara_jawa import to_aksara_jawa
+    from libraries.aksara_bali import to_aksara_bali
+    from libraries.securities import decode_morse, encode_morse
 
 API_BASE_URL = "https://api.alquran.cloud/v1"
 

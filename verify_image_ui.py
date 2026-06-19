@@ -3,10 +3,16 @@ import io
 import base64
 from PIL import Image
 
-from ai import create_app
-from config.settings import Config
-import chat as chat_module
-import blueprints.ai_routes as ai_routes
+try:
+    from games.ai import create_app
+    from games.config.settings import Config
+    import games.chat as chat_module
+    import games.blueprints.ai_routes as ai_routes
+except Exception:
+    from ai import create_app
+    from config.settings import Config
+    import chat as chat_module
+    import blueprints.ai_routes as ai_routes
 
 # Prepare environment
 Config.create_upload_folder()
