@@ -4,6 +4,7 @@ This module provides simple wrappers around existing aksara modules and the
 Morse utility. It also allows registering additional script mappings.
 """
 from typing import Dict
+import unicodedata
 
 from importlib import import_module
 
@@ -40,22 +41,58 @@ def translate_to_script(script: str, text: str) -> str:
     if key == 'morse':
         return morse.encode(text)
 
+    # normalize input
+    if isinstance(text, str):
+        text = unicodedata.normalize('NFKC', text).lower()
+
+    def _apply_mapping(mapping: Dict[str, str], txt: str) -> str:
+        # use longest-key-first matching so digraphs (ng, ny) are handled
+        keys = sorted(mapping.keys(), key=lambda k: -len(k))
+        i = 0
+        out = []
+        while i < len(txt):
+            matched = False
+            for k in keys:
+                if txt.startswith(k, i):
+                    out.append(mapping.get(k, k))
+                    i += len(k)
+                    matched = True
+                    break
+            if not matched:
+                out.append(txt[i])
+                i += 1
+        return ''.join(out)
+
     # Check registered mappings
     if key in _MAPPINGS:
         mapping = _MAPPINGS[key]
-        return ''.join(mapping.get(ch, ch) for ch in text)
+        return _apply_mapping(mapping, text)
 
     # Try to load a module libraries/aksara_{script}
     mod = _try_load_module(script)
     if mod:
+        # support module-level conversion functions named like `to_aksara_<name>`
+        func_name = f"to_aksara_{script.lower()}"
         if hasattr(mod, 'latin_to_aksara'):
             try:
                 return mod.latin_to_aksara(text)
             except Exception:
                 pass
+        if hasattr(mod, func_name):
+            try:
+                res = getattr(mod, func_name)(text)
+                if isinstance(res, dict):
+                    return res.get('data', {}).get('result', '')
+                return res
+            except Exception:
+                pass
         if hasattr(mod, 'MAPPING'):
             mapping = getattr(mod, 'MAPPING')
-            return ''.join(mapping.get(ch, ch) for ch in text)
+            try:
+                return _apply_mapping(mapping, text)
+            except Exception:
+                # fallback to per-character mapping
+                return ''.join(mapping.get(ch, ch) for ch in text)
 
     # Last-resort: return original text
     return text

@@ -482,14 +482,16 @@
         style="display:inline-block;padding:10px 14px;background:#0ea5e9;color:#fff;border-radius:10px;text-decoration:none;font-weight:700">
         Quran
       </a>
+      <a href="/static/translate_demo.html" target="_blank" rel="noopener"
+        style="display:inline-block;padding:10px 14px;background:#10b981;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;margin-left:8px;">
+        Translator Demo
+      </a>
       <button onclick="showSection('ai-chat-section')">AI Chat</button>
       <button onclick="showSection('math-section-group')">Math</button>
       <button onclick="showSection('game-section-group')">Games</button>
       <button onclick="showSection('ner-section-group')">NER</button>
       <button onclick="showSection('image-section-group')">Image Generator</button>
-      <button onclick="showSection('aksara-sunda-section')">Aksara Sunda</button>
-      <button onclick="showSection('aksara-jawa-section')">Aksara Jawa</button>
-      <button onclick="showSection('aksara-bali-section')">Aksara Bali</button>
+      
       <button onclick="showSection('image-classifier-section')">Image Classifier</button>
       <button onclick="showSection('tts-section')">Text to Speech</button>
       <button onclick="showSection('stt-section')">Speech to Text</button>
@@ -943,44 +945,7 @@
       </div>
     </section>
 
-    <section id="aksara-sunda-section" style="margin-bottom:30px; display:none;">
-      <div id="aksara-sunda-container"
-        style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;text-align:left;">
-        <p style="font-size:1.1rem;font-weight:bold;color:#ffd700;text-shadow:1px 1px 2px #222;">Aksara Sunda</p>
-        <input type="text" id="latinInput" name="latin"
-          style="width:100%; margin-bottom:10px; background: #fff; color: #333; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-        <div style="display:flex;gap:10px;margin-bottom:10px;">
-          <button onclick="aksaraSunda()" style="flex:1">Translate</button>
-          <button onclick="speakAksaraSunda()" style="flex:1">Speak</button>
-          <button onclick="sttAksaraSunda()" style="flex:1">Speech to Latin</button>
-        </div>
-        <div id="translateResult" style="margin-top:16px; text-align: left;"></div>
-      </div>
-    </section>
-
-    <section id="aksara-jawa-section" style="margin-bottom:30px; display:none;">
-      <div id="aksara-sunda-container"
-        style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;text-align:left;">
-        <p style="font-size:1.1rem;font-weight:bold;color:#ffd700;text-shadow:1px 1px 2px #222;">Aksara Jawa</p>
-        <input type="text" id="textInput" name="text"
-          style="width:100%; margin-bottom:10px; background: #fff; color: #333; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-        <button onclick="aksaraJawa()"
-          style="width:100%; margin-top:1rem; font-size:1.1rem; border-radius:8px; padding:12px 0; background:linear-gradient(45deg,#1e3c72,#2a5298);color:white;font-weight:bold;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(30,60,114,0.12);transition:background 0.3s;">Translate</button>
-        <div id="jawaResult" style="margin-top:16px; text-align: left;"></div>
-      </div>
-    </section>
-
-    <div id="aksara-bali-section">
-      <div id="aksara-bali-container"
-        style="background:rgba(255,255,255,0.07);border-radius:16px;padding:24px 20px 20px 20px;box-shadow:0 4px 16px rgba(30,60,114,0.08);max-width:100%;width:100%;text-align:left;">
-        <p style="font-size:1.1rem;font-weight:bold;color:#ffd700;text-shadow:1px 1px 2px #222;">Aksara Bali</p>
-        <input type="text" id="baliInput" name="bali"
-          style="width:100%; margin-bottom:10px; background: #fff; color: #333; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-        <button onclick="aksaraBali()"
-          style="width:100%; margin-top:1rem; font-size:1.1rem; border-radius:8px; padding:12px 0; background:linear-gradient(45deg,#1e3c72,#2a5298);color:white;font-weight:bold;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(30,60,114,0.12);transition:background 0.3s;">Translate</button>
-        <div id="baliResult" style="margin-top:16px; text-align: left;"></div>
-      </div>
-    </div>
+    <!-- Aksara sections removed per request -->
 
     <!-- Add TTS and STT sections (if missing) -->
     <section id="tts-section" style="margin-bottom:30px; display:none;">
@@ -1019,9 +984,7 @@
         'game-section-group',
         'ner-section-group',
         'image-section-group',
-        'aksara-sunda-section',
-        'aksara-jawa-section',
-        'aksara-bali-section',
+        
         'image-classifier-section',
         'tts-section',
         'stt-section'
@@ -1570,101 +1533,7 @@
         });
     }
 
-    // Aksara Sunda
-    function aksaraSunda() {
-      const text = document.getElementById("latinInput").value.trim();
-      const resultDiv = document.getElementById("translateResult");
-      resultDiv.innerText = "Translate...";
-      fetch('/aksara_sunda', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-      })
-        .then(r => r.json())
-        .then(data => {
-          let result = data.data?.result ?? data.result ?? data.message ?? data;
-          resultDiv.innerText = result;
-        })
-        .catch(err => {
-          resultDiv.innerText = "Error: " + (err.message || err);
-        });
-    }
-
-    // Text to Speech for Aksara Sunda (speaks the Latin input)
-    function speakAksaraSunda() {
-      const text = document.getElementById("latinInput").value.trim();
-      if (!text) return;
-      const synth = window.speechSynthesis;
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "su-ID"; // Sundanese locale, fallback to "id-ID" if not supported
-      synth.speak(utter);
-    }
-
-    // Speech to Text for Aksara Sunda (fills Latin input)
-    let recognitionSunda;
-    function sttAksaraSunda() {
-      const latinInput = document.getElementById("latinInput");
-      latinInput.value = "";
-      // Use webkitSpeechRecognition for Chrome, SpeechRecognition for others
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Speech recognition not supported in this browser.");
-        return;
-      }
-      recognitionSunda = new SpeechRecognition();
-      recognitionSunda.lang = "su-ID"; // Sundanese locale, fallback to "id-ID" if not supported
-      recognitionSunda.interimResults = false;
-      recognitionSunda.maxAlternatives = 1;
-
-      recognitionSunda.onresult = function (event) {
-        const transcript = event.results[0][0].transcript;
-        latinInput.value = transcript;
-      };
-      recognitionSunda.onerror = function (event) {
-        alert("Error: " + event.error);
-      };
-      recognitionSunda.start();
-    }
-
-    // Aksara Jawa
-    function aksaraJawa() {
-      const text = document.getElementById("textInput").value.trim();
-      const resultDiv = document.getElementById("jawaResult");
-      resultDiv.innerText = "Translate...";
-      fetch('/aksara_jawa', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-      })
-        .then(r => r.json())
-        .then(data => {
-          let result = data.data?.result ?? data.result ?? data.message ?? data;
-          resultDiv.innerText = result;
-        })
-        .catch(err => {
-          resultDiv.innerText = "Error: " + (err.message || err);
-        });
-    }
-
-    // Aksara Bali
-    function aksaraBali() {
-      const text = document.getElementById("baliInput").value.trim();
-      const resultDiv = document.getElementById("baliResult");
-      resultDiv.innerText = "Translate...";
-      fetch('/aksara_bali', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-      })
-        .then(r => r.json())
-        .then(data => {
-          let result = data.data?.result ?? data.result ?? data.message ?? data;
-          resultDiv.innerText = result;
-        })
-        .catch(err => {
-          resultDiv.innerText = "Error: " + (err.message || err);
-        });
-    }
+    // Aksara UI handlers removed
 
     // math.js external loading disabled to avoid CSP/script-src violations.
     // We will rely on the built-in, CSP-safe evaluator instead of injecting external scripts.
